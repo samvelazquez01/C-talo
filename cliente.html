@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Reservar Cita | CÍTALO</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/icon.svg">
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/booking.css">
+</head>
+<body>
+  <!-- NAVBAR AISLADO (SIN NAVEGACIÓN CRUZADA) -->
+  <header class="navbar">
+    <div class="brand" style="display: flex; align-items: center; gap: 10px;">
+      <img id="cliente-plataforma-logo" src="./assets/icons/icon.svg" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; border: 1.5px solid var(--accent-gold);" alt="CÍTALO">
+      <div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-weight: 900; font-size: 1.15rem; letter-spacing: 0.5px;">CÍTALO</span>
+          <span style="color: var(--text-muted); font-size: 0.9rem;">·</span>
+          <span id="nav-biz-name" style="font-weight: 700; font-size: 0.95rem; color: var(--accent-gold);">Cargando...</span>
+        </div>
+        <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1;">Tu cita a un click</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button id="btn-theme" class="btn btn-ghost btn-icon">🌙</button>
+    </div>
+  </header>
+
+  <main class="app-container" style="max-width: 600px; padding-top: 14px; padding-bottom: 90px;">
+    <!-- ENCABEZADO MODO 1: LOCAL / NEGOCIO (SI SE ENTRÓ AL LINK DE LA PELUQUERÍA) -->
+    <header id="header-modo-negocio" class="booking-header">
+      <img id="biz-header-logo" src="./assets/icons/icon.svg" class="booking-logo" alt="Logo">
+      <h1 id="biz-header-nombre" class="booking-biz-name">Negocio</h1>
+      <p id="biz-header-desc" class="booking-biz-desc">Reserva tu turno en línea en 30 segundos</p>
+    </header>
+
+    <!-- ENCABEZADO MODO 2: PROFESIONAL PERSONAL (SI SE ENTRÓ AL LINK DIRECTO DEL BARBERO) -->
+    <header id="header-modo-barbero" class="card" style="display: none; background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(15,23,42,0.85)); border: 2px solid var(--accent-gold); padding: 22px 20px; text-align: center; border-radius: var(--radius-xl); margin-bottom: 24px; box-shadow: 0 10px 28px rgba(0,0,0,0.4);">
+      <div style="position: relative; display: inline-block; margin-bottom: 12px;">
+        <img id="barbero-hero-foto" src="./assets/icons/icon.svg" style="width: 86px; height: 86px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-gold); box-shadow: 0 6px 18px rgba(0,0,0,0.4);" alt="Foto">
+        <span id="barbero-hero-tag" style="position: absolute; bottom: -4px; right: -6px; background: var(--accent-gold); color: #0b0f17; font-size: 0.72rem; font-weight: 900; padding: 2px 8px; border-radius: 10px;">Barbero</span>
+      </div>
+      <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-gold); font-weight: 800;">
+        ✨ Tu Cita Directa con
+      </div>
+      <h1 id="barbero-hero-nombre" style="font-size: 1.7rem; font-weight: 900; margin: 4px 0 6px; color: var(--text-primary);">
+        Nombre del Barbero
+      </h1>
+      <p id="barbero-hero-esp" style="font-size: 0.9rem; color: var(--text-secondary); margin: 0 0 12px;">
+        Especialidad
+      </p>
+
+      <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--bg-surface); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-subtle); font-size: 0.85rem; max-width: 100%; flex-wrap: wrap; justify-content: center;">
+        <img id="barbero-hero-biz-logo" src="./assets/icons/icon.svg" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover;" alt="Logo local">
+        <span>Atiende en: <b id="barbero-hero-biz-nombre" style="color: var(--accent-gold);">Mi Local</b></span>
+        <span id="barbero-hero-biz-dir" style="color: var(--text-muted); font-size: 0.8rem;">· Dirección</span>
+      </div>
+    </header>
+
+    <!-- CONTENIDO DEL ASISTENTE DE RESERVA -->
+    <div id="booking-wizard">
+      <!-- PASO 1: SERVICIOS -->
+      <section style="margin-bottom: 24px;">
+        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          <span style="background: var(--accent-gold); color: #0b0f17; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">1</span>
+          <span id="txt-paso-servicios">Elige tu(s) servicio(s)</span>
+        </h3>
+        <div id="grid-servicios" class="services-grid">
+          <!-- Dinámico -->
+        </div>
+      </section>
+
+      <!-- PASO 2: PROFESIONAL -->
+      <section id="sec-elige-barbero" style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <span style="background: var(--accent-gold); color: #0b0f17; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">2</span>
+            <span id="txt-paso-personal">Elige tu Profesional</span>
+          </h3>
+          <span id="txt-barbero-seleccionado-badge" style="font-size: 0.82rem; color: var(--accent-gold); font-weight: 700;"></span>
+        </div>
+        <div id="grid-barberos" class="barbers-grid">
+          <!-- Dinámico -->
+        </div>
+      </section>
+
+      <!-- PASO 3: DÍA -->
+      <section style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <span style="background: var(--accent-gold); color: #0b0f17; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">3</span>
+            Selecciona el Día
+          </h3>
+          <div id="lbl-fecha-seleccionada" style="font-size: 0.95rem; font-weight: 800; color: var(--accent-gold); background: var(--bg-surface-elevated); padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border-subtle); display: inline-flex; align-items: center; gap: 6px;">
+            <span>📅</span>
+            <span id="txt-fecha-legible">Cargando fecha...</span>
+          </div>
+        </div>
+
+        <div class="days-slider-container" style="position: relative; display: flex; align-items: center; margin: 6px 0;">
+          <button type="button" id="btn-slide-prev" aria-label="Días anteriores" style="position: absolute; left: -8px; z-index: 10; width: 34px; height: 34px; border-radius: 50%; background: var(--bg-surface-elevated); border: 1.5px solid var(--accent-gold); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+            ◀
+          </button>
+          <div id="slider-dias" class="days-slider" style="flex: 1; padding: 8px 30px 14px; scroll-behavior: smooth; cursor: grab;">
+            <!-- Dinámico -->
+          </div>
+          <button type="button" id="btn-slide-next" aria-label="Días siguientes" style="position: absolute; right: -8px; z-index: 10; width: 34px; height: 34px; border-radius: 50%; background: var(--bg-surface-elevated); border: 1.5px solid var(--accent-gold); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+            ▶
+          </button>
+        </div>
+      </section>
+
+      <!-- PASO 4: HORA (12 HORAS AM/PM) -->
+      <section style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <span style="background: var(--accent-gold); color: #0b0f17; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">4</span>
+            Horas Disponibles
+          </h3>
+          <span id="txt-sub-horas" style="font-size: 0.85rem; color: var(--accent-gold); font-weight: 800;">
+            <!-- Dinámico -->
+          </span>
+        </div>
+        <div id="slots-container" class="time-slots-container">
+          <!-- Dinámico -->
+        </div>
+      </section>
+
+      <!-- PASO 5: DATOS Y CONFIRMACIÓN -->
+      <section id="sec-formulario-cliente" class="card" style="display: none; border: 2px solid var(--accent-gold);">
+        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 14px;">Completa tus datos para confirmar</h3>
+        <form id="form-cliente-reserva">
+          <div class="form-group" style="position: relative;">
+            <label class="form-label">Tu Nombre y Apellido *</label>
+            <input type="text" id="cli-nombre" class="form-input" required placeholder="Ej: Samuel Velásquez" autocomplete="off" list="dl-clientes-registrados">
+            <datalist id="dl-clientes-registrados">
+              <!-- Sugerencias automáticas de clientes de la peluquería -->
+            </datalist>
+            <div id="cli-sugerencia-msg" style="display: none; font-size: 0.82rem; color: var(--accent-gold); font-weight: 700; margin-top: 5px;">
+              ✨ ¡Hola de nuevo! Detectamos tu número de teléfono y lo completamos por ti.
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono Móvil *</label>
+            <input type="tel" id="cli-tel" class="form-input" required placeholder="Ej: 8095551234">
+          </div>
+          <button type="submit" id="btn-confirmar-reserva" class="btn btn-primary btn-lg btn-full" style="margin-top: 10px;">
+            Confirmar Reserva ✂️
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <!-- PANTALLA DE ÉXITO TRAS RESERVAR -->
+    <div id="booking-exito" style="display: none;">
+      <!-- Dinámico -->
+    </div>
+
+    <!-- MODAL DE SOPORTE Y GESTIÓN DE CITA (DISCRETO) -->
+    <div id="modal-soporte-cita" class="modal-overlay" style="display: none;">
+      <div class="modal" style="max-width: 480px;">
+        <div class="modal-header">
+          <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem;">
+            <span>🛠️</span> Soporte y Gestión de Turno
+          </h3>
+          <button type="button" id="btn-cerrar-soporte" class="btn btn-ghost btn-sm" style="font-size: 1.2rem; line-height: 1; padding: 4px 8px;">✕</button>
+        </div>
+        <div class="modal-body">
+          <div id="soporte-cita-info" class="card" style="background: var(--bg-body); border: 1px solid var(--border-color); padding: 12px; margin-bottom: 16px;">
+            <!-- Resumen de cita dinámica -->
+          </div>
+          <!-- ACCIONES SEGÚN ANTICIPACIÓN -->
+          <div id="soporte-acciones-box">
+            <!-- Dinámico -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BARRA INFERIOR FLOTANTE CON RESUMEN -->
+    <div id="booking-footer-bar" class="booking-bottom-bar">
+      <div class="booking-summary-text">
+        <h5 id="foot-serv-count">1 servicio seleccionado</h5>
+        <div id="foot-total-price" class="booking-total-price">$500</div>
+      </div>
+      <div>
+        <span id="foot-selected-slot" class="badge badge-gold">Elige hora</span>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { DB, VERTICALES } from './js/db.js';
+    import { ThemeManager, showToast } from './js/state.js';
+    import { calcularDisponibilidad } from './js/shared/availability.js';
+    import {
+      getFechaHoyLocal,
+      getMinutosHoyLocal,
+      formatearFechaLegible,
+      sumarMinutosAHora,
+      formatTime12,
+      formatTimeRange12
+    } from './js/utils/date-utils.js';
+    import { descargarArchivoICS } from './js/utils/ics-generator.js';
+
+    ThemeManager.init();
+    document.getElementById('btn-theme')?.addEventListener('click', () => {
+      const nuevo = ThemeManager.toggle();
+      document.getElementById('btn-theme').innerText = nuevo === 'dark' ? '🌙' : '☀️';
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const bBiz = params.get('b');
+    const bBarbero = params.get('barbero');
+
+    let negocio = null;
+    let barberos = [];
+    let servicios = [];
+    let barberoSel = null;
+    let serviciosSel = [];
+    let fechaSel = null;
+    let slotSel = null;
+    let citaEnReprogramacion = null;
+    let esEnlacePersonal = Boolean(bBarbero);
+    let vert = null;
+
+    let listaDias = [];
+    const NOMBRES_DIAS_SEMANA = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    const NOMBRES_MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+    function init() {
+      const negocios = DB.getNegocios();
+
+      if (bBiz) {
+        negocio = negocios.find(n => n.slug === bBiz || n.id === bBiz);
+      }
+
+      if (!negocio && bBarbero) {
+        const matchB = (DB.get().barberos || []).find(b => b.slug === bBarbero || b.id === bBarbero);
+        if (matchB) {
+          negocio = DB.getNegocio(matchB.negocioId);
+        }
+      }
+
+      if (!negocio) negocio = negocios[0];
+
+      if (!negocio) {
+        document.body.innerHTML = `
+          <div class="card" style="text-align:center; padding:40px; max-width:500px; margin:40px auto;">
+            <span style="font-size:3rem;">🏢</span>
+            <h3 style="margin-top:10px;">No hay negocios registrados</h3>
+            <p style="color:var(--text-secondary); margin:8px 0 16px;">Comienza registrando tu local en el panel de control.</p>
+            <a href="./superadmin.html" class="btn btn-primary">Ir al Panel de Administrador</a>
+          </div>
+        `;
+        return;
+      }
+
+      if (negocio.suscripcion?.estado === 'cancelada' || negocio.suscripcion?.estado === 'suspendida' || negocio.activo === false) {
+        document.body.innerHTML = `
+          <div class="card" style="text-align:center; padding:40px; max-width:500px; margin:60px auto; border: 2px solid var(--accent-red);">
+            <span style="font-size:3rem;">⛔</span>
+            <h3 style="margin-top:10px; font-weight: 800;">Agenda temporalmente pausada</h3>
+            <p style="color:var(--text-secondary); margin:8px 0 16px;">
+              Las citas en línea para <strong>${negocio.nombre}</strong> no se encuentran disponibles en este momento.
+            </p>
+            <p style="font-size:0.85rem; color:var(--text-muted);">Comunícate directamente con el establecimiento.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const tipo = negocio.tipoNegocio || 'barberia';
+      document.documentElement.dataset.vertical = tipo;
+      vert = (VERTICALES && VERTICALES[tipo]) || (DB.VERTICALES && DB.VERTICALES[tipo]) || {
+        nombre: 'Barbería',
+        personalSingular: 'Barbero',
+        personalPlural: 'Barberos',
+        servicioSingular: 'Corte',
+        servicioPlural: 'Cortes y Servicios',
+        sillonOEspacio: 'Sillón',
+        icono: '💈'
+      };
+      const plat = DB.getPlataforma?.() || { nombre: 'CÍTALO', eslogan: 'Tu cita a un click' };
+
+      const platLogo = document.getElementById('cliente-plataforma-logo');
+      if (platLogo) platLogo.src = plat.logoUrl || './assets/icons/icon.svg';
+
+      barberos = DB.getBarberos(negocio.id, true);
+      if (barberos.length === 0) {
+        barberos = DB.getBarberos(negocio.id, false);
+      }
+
+      servicios = DB.getServicios(negocio.id).filter(s => s.activo);
+      if (servicios.length > 0) serviciosSel = [servicios[0].id];
+
+      if (bBarbero) {
+        barberoSel = barberos.find(b => b.slug === bBarbero || b.id === bBarbero) || barberos[0];
+        esEnlacePersonal = Boolean(barberoSel);
+      } else {
+        barberoSel = barberos[0] || null;
+        esEnlacePersonal = false;
+      }
+
+      fechaSel = getFechaHoyLocal(negocio.zonaHoraria);
+
+      // Etiquetas del asistente
+      const tServ = document.getElementById('txt-paso-servicios');
+      if (tServ) tServ.innerText = `Elige tu(s) ${vert.servicioSingular.toLowerCase()}(s)`;
+
+      const tPers = document.getElementById('txt-paso-personal');
+      if (tPers) tPers.innerText = `Elige tu ${vert.personalSingular}`;
+
+      const btnConf = document.getElementById('btn-confirmar-reserva');
+      if (btnConf) btnConf.innerText = `Confirmar Reserva ${vert.icono}`;
+
+      renderHeader();
+      renderServicios();
+      renderBarberos();
+      renderDias();
+      initSliderControls();
+      renderSlots();
+      actualizarFooter();
+      poblarDatalistClientes();
+    }
+
+    // RENDERIZADO DEL ENCABEZADO (MODO LOCAL VS MODO PERSONAL DEL PROFESIONAL)
+    function renderHeader() {
+      const hNeg = document.getElementById('header-modo-negocio');
+      const hBar = document.getElementById('header-modo-barbero');
+
+      if (esEnlacePersonal && barberoSel) {
+        hNeg.style.display = 'none';
+        hBar.style.display = 'block';
+
+        document.getElementById('barbero-hero-foto').src = barberoSel.fotoUrl || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&q=80';
+        document.getElementById('barbero-hero-tag').innerText = vert.personalSingular;
+        document.getElementById('barbero-hero-nombre').innerText = barberoSel.nombre;
+        document.getElementById('barbero-hero-esp').innerText = barberoSel.especialidad || `${vert.personalSingular} Profesional`;
+        document.getElementById('barbero-hero-biz-logo').src = negocio.logoUrl || './assets/icons/icon.svg';
+        document.getElementById('barbero-hero-biz-nombre').innerText = negocio.nombre;
+        document.getElementById('barbero-hero-biz-dir').innerText = negocio.direccion ? `· ${negocio.direccion}` : '';
+        document.getElementById('nav-biz-name').innerText = `${negocio.nombre} · ${barberoSel.nombre}`;
+      } else {
+        hBar.style.display = 'none';
+        hNeg.style.display = 'block';
+
+        document.getElementById('biz-header-logo').src = negocio.logoUrl || './assets/icons/icon.svg';
+        document.getElementById('biz-header-nombre').innerText = negocio.nombre;
+        document.getElementById('biz-header-desc').innerText = negocio.descripcion || `Reserva tu turno en línea con nuestro equipo de ${vert.personalPlural.toLowerCase()}`;
+        document.getElementById('nav-biz-name').innerText = negocio.nombre;
+      }
+    }
+
+    // 1. SERVICIOS
+    function renderServicios() {
+      const cont = document.getElementById('grid-servicios');
+      if (servicios.length === 0) {
+        cont.innerHTML = '<p style="color:var(--text-muted);">Este negocio aún no ha publicado servicios.</p>';
+        return;
+      }
+
+      cont.innerHTML = servicios.map(s => {
+        const isSel = serviciosSel.includes(s.id);
+        const precio = barberoSel?.preciosPersonalizados?.[s.id] ?? s.precio;
+        return `
+          <div class="service-card-select ${isSel ? 'selected' : ''}" data-id="${s.id}">
+            <div class="service-select-info">
+              <h4>${s.nombre}</h4>
+              ${s.descripcion ? `<p class="service-select-desc">${s.descripcion}</p>` : ''}
+              <div class="service-select-meta">
+                <span class="service-price">${negocio.simboloMoneda || 'RD$'}${precio}</span>
+                <span class="service-duration">⏱ ${s.duracionMin} min</span>
+              </div>
+            </div>
+            <div class="service-check">${isSel ? '✓' : ''}</div>
+          </div>
+        `;
+      }).join('');
+
+      cont.querySelectorAll('.service-card-select').forEach(card => {
+        card.addEventListener('click', () => {
+          const id = card.dataset.id;
+          if (serviciosSel.includes(id)) {
+            if (serviciosSel.length > 1) {
+              serviciosSel = serviciosSel.filter(x => x !== id);
+            } else {
+              showToast('Debes seleccionar al menos un servicio', 'warning');
+              return;
+            }
+          } else {
+            serviciosSel.push(id);
+          }
+          slotSel = null;
+          renderServicios();
+          renderSlots();
+          actualizarFooter();
+        });
+      });
+    }
+
+    // 2. PROFESIONALES / BARBEROS
+    function renderBarberos() {
+      const cont = document.getElementById('grid-barberos');
+      const badgeSel = document.getElementById('txt-barbero-seleccionado-badge');
+
+      if (badgeSel && barberoSel) {
+        badgeSel.innerText = `Atiende: ${barberoSel.nombre}`;
+      }
+
+      // Si entró por enlace directo de barbero, mostrar tarjeta confirmada con opción para ver otros si gusta
+      if (esEnlacePersonal && barberoSel) {
+        cont.innerHTML = `
+          <div class="card" style="grid-column: 1 / -1; margin: 0; padding: 14px 18px; border: 2px solid var(--accent-gold); background: rgba(212,175,55,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <img src="${barberoSel.fotoUrl || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&q=80'}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-gold);" alt="${barberoSel.nombre}">
+              <div>
+                <div style="font-weight: 800; font-size: 1.05rem;">${barberoSel.nombre}</div>
+                <div style="font-size: 0.82rem; color: var(--text-secondary);">${barberoSel.especialidad || (vert.personalSingular + ' Profesional')}</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="badge badge-green">✓ ${vert.personalSingular} Asignado</span>
+              <button type="button" id="btn-ver-otros-barberos" class="btn btn-ghost btn-sm" style="font-size: 0.82rem; color: var(--accent-gold);">
+                Ver otros profesionales
+              </button>
+            </div>
+          </div>
+        `;
+        document.getElementById('btn-ver-otros-barberos')?.addEventListener('click', () => {
+          esEnlacePersonal = false;
+          renderHeader();
+          renderBarberos();
+          renderSlots();
+          actualizarFooter();
+        });
+        return;
+      }
+
+      // Modo catálogo del negocio: mostrar todos los profesionales disponibles
+      if (barberos.length === 0) {
+        cont.innerHTML = `<p style="color:var(--text-muted); padding: 10px;">No hay ${vert.personalPlural.toLowerCase()} disponibles en este momento.</p>`;
+        return;
+      }
+
+      cont.innerHTML = barberos.map(b => {
+        const isSel = (barberoSel?.id === b.id);
+        return `
+          <div class="barber-card-select ${isSel ? 'selected' : ''}" data-id="${b.id}" style="border: 2px solid ${isSel ? 'var(--accent-gold)' : 'var(--border-subtle)'}; background: ${isSel ? 'rgba(212,175,55,0.1)' : 'var(--bg-surface)'}; display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: var(--radius-lg); cursor: pointer; transition: all 0.2s;">
+            <img src="${b.fotoUrl || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&q=80'}" class="barber-avatar" alt="${b.nombre}" style="width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid ${isSel ? 'var(--accent-gold)' : 'var(--border-strong)'};">
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="font-weight: 800; font-size: 1.05rem; margin: 0;">${b.nombre}</h4>
+                <span class="badge ${isSel ? 'badge-gold' : 'badge-muted'}" style="font-size: 0.72rem;">
+                  ${isSel ? '✓ Seleccionado' : 'Elegir'}
+                </span>
+              </div>
+              <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 3px 0 0;">${b.especialidad || (vert.personalSingular + ' profesional')}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      cont.querySelectorAll('.barber-card-select').forEach(card => {
+        card.addEventListener('click', () => {
+          barberoSel = barberos.find(b => b.id === card.dataset.id);
+          slotSel = null;
+          renderBarberos();
+          renderServicios();
+          renderSlots();
+          actualizarFooter();
+        });
+      });
+    }
+
+    // 3. DÍAS (LISTA FIJA DE 35 DÍAS - NAVEGACIÓN Y ARRASTRE SIN PERDER DÍAS ANTERIORES)
+    function generarListaDias() {
+      listaDias = [];
+      const hoyStr = getFechaHoyLocal(negocio.zonaHoraria);
+      const [y, m, d] = hoyStr.split('-').map(Number);
+      const pad = (n) => String(n).padStart(2, '0');
+
+      for (let i = 0; i < 35; i++) {
+        const dt = new Date(y, m - 1, d + i);
+        const fStr = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+        listaDias.push({
+          fechaStr: fStr,
+          diaNombre: NOMBRES_DIAS_SEMANA[dt.getDay()], // "Mié", "Jue", "Vie", etc. NUNCA "Hoy" ni "Mañ"
+          diaNumero: dt.getDate(),
+          mesCorto: NOMBRES_MESES_CORTOS[dt.getMonth()]
+        });
+      }
+    }
+
+    function renderDias() {
+      const cont = document.getElementById('slider-dias');
+      if (!cont) return;
+
+      if (listaDias.length === 0) generarListaDias();
+
+      // Actualizar el rótulo superior con el día completo en español
+      const lbl = document.getElementById('txt-fecha-legible');
+      if (lbl) {
+        lbl.innerText = formatearFechaLegible(fechaSel);
+      }
+
+      cont.innerHTML = listaDias.map(d => {
+        const isSel = (d.fechaStr === fechaSel);
+        return `
+          <div class="day-pill ${isSel ? 'selected' : ''}" data-f="${d.fechaStr}" style="cursor: pointer; flex: 0 0 74px; text-align: center; user-select: none;">
+            <span class="day-pill-name" style="font-weight: 700; font-size: 0.8rem; text-transform: capitalize;">${d.diaNombre}</span>
+            <span class="day-pill-num" style="font-size: 1.35rem; font-weight: 900; margin: 2px 0;">${d.diaNumero}</span>
+            <span class="day-pill-month" style="font-size: 0.75rem; color: inherit; opacity: 0.85;">${d.mesCorto}</span>
+          </div>
+        `;
+      }).join('');
+
+      cont.querySelectorAll('.day-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          fechaSel = pill.dataset.f;
+          slotSel = null;
+
+          cont.querySelectorAll('.day-pill').forEach(p => {
+            p.classList.toggle('selected', p.dataset.f === fechaSel);
+          });
+
+          const lblActual = document.getElementById('txt-fecha-legible');
+          if (lblActual) lblActual.innerText = formatearFechaLegible(fechaSel);
+
+          renderSlots();
+          actualizarFooter();
+        });
+      });
+    }
+
+    function initSliderControls() {
+      const slider = document.getElementById('slider-dias');
+      if (!slider || slider._dragInited) return;
+      slider._dragInited = true;
+
+      // Botones de desplazamiento
+      document.getElementById('btn-slide-prev')?.addEventListener('click', () => {
+        slider.scrollBy({ left: -220, behavior: 'smooth' });
+      });
+
+      document.getElementById('btn-slide-next')?.addEventListener('click', () => {
+        slider.scrollBy({ left: 220, behavior: 'smooth' });
+      });
+
+      // Arrastre con el mouse en PC
+      let isDown = false;
+      let startX = 0;
+      let scrollLeft = 0;
+
+      slider.addEventListener('mousedown', (e) => {
+        isDown = true;
+        slider.style.cursor = 'grabbing';
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDown = false;
+        if (slider) slider.style.cursor = 'grab';
+      });
+
+      slider.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        slider.scrollLeft = scrollLeft - walk;
+      });
+    }
+
+    // 4. HORAS CON FORMATO 12 HORAS (AM/PM)
+    function renderSlots() {
+      const cont = document.getElementById('slots-container');
+      const subHoras = document.getElementById('txt-sub-horas');
+
+      if (!barberoSel) {
+        if (subHoras) subHoras.innerText = '';
+        cont.innerHTML = `<p style="color:var(--text-muted); padding: 14px; text-align: center;">Elige un ${vert.personalSingular.toLowerCase()} arriba para ver sus horas disponibles.</p>`;
+        return;
+      }
+
+      if (subHoras) {
+        subHoras.innerText = `Horarios con ${barberoSel.nombre}`;
+      }
+
+      const servs = servicios.filter(s => serviciosSel.includes(s.id));
+      const duracionTotal = servs.reduce((acc, s) => acc + s.duracionMin, 0);
+      const dMin = Math.min(...servicios.map(s => s.duracionMin), 15);
+
+      const citasExistentes = DB.getCitas(negocio.id, barberoSel.id, fechaSel).filter(c => c.estado !== 'cancelada');
+      const esHoy = (fechaSel === getFechaHoyLocal(negocio.zonaHoraria));
+      const ahoraMin = esHoy ? getMinutosHoyLocal(negocio.zonaHoraria) : null;
+
+      const slots = calcularDisponibilidad({
+        fecha: fechaSel,
+        duracionServicio: duracionTotal,
+        dMin,
+        horarioSemanal: barberoSel.horarioSemanal,
+        citasExistentes,
+        bloqueos: barberoSel.bloqueos || [],
+        reglas: barberoSel.reglas || {},
+        ahoraMinutos: ahoraMin,
+        esHoy
+      });
+
+      if (slots.length === 0) {
+        cont.innerHTML = `
+          <div class="card" style="text-align: center; padding: 24px; background: var(--bg-surface-elevated);">
+            <p style="font-weight: 700; color: var(--text-secondary);">No hay turnos disponibles con ${barberoSel.nombre} para este día</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Prueba seleccionando otro día en el calendario de arriba o elige a otro profesional.</p>
+          </div>
+        `;
+        document.getElementById('sec-formulario-cliente').style.display = 'none';
+        return;
+      }
+
+      const manana = slots.filter(s => s.minutos < 720);
+      const tarde = slots.filter(s => s.minutos >= 720);
+
+      cont.innerHTML = `
+        ${manana.length > 0 ? `
+          <div class="time-slots-group-title">🌅 Mañana</div>
+          <div class="slots-grid">
+            ${manana.map(s => `
+              <button type="button" class="slot-btn ${slotSel?.hora === s.hora ? 'selected' : ''}" data-hora="${s.hora}">
+                ${s.esRecomendada ? '<span class="slot-badge-recom">Recom.</span>' : ''}
+                ${formatTime12(s.hora)}
+              </button>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        ${tarde.length > 0 ? `
+          <div class="time-slots-group-title">🌇 Tarde</div>
+          <div class="slots-grid">
+            ${tarde.map(s => `
+              <button type="button" class="slot-btn ${slotSel?.hora === s.hora ? 'selected' : ''}" data-hora="${s.hora}">
+                ${s.esRecomendada ? '<span class="slot-badge-recom">Recom.</span>' : ''}
+                ${formatTime12(s.hora)}
+              </button>
+            `).join('')}
+          </div>
+        ` : ''}
+      `;
+
+      cont.querySelectorAll('.slot-btn').forEach(b => {
+        b.addEventListener('click', () => {
+          const h = b.dataset.hora;
+          slotSel = slots.find(s => s.hora === h);
+          renderSlots();
+          actualizarFooter();
+
+          // Mostrar formulario
+          const secForm = document.getElementById('sec-formulario-cliente');
+          secForm.style.display = 'block';
+          document.getElementById('btn-confirmar-reserva').innerText = `Confirmar Reserva (${formatTime12(slotSel.hora)}) ${vert.icono}`;
+          secForm.scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+    }
+
+    function actualizarFooter() {
+      const servs = servicios.filter(s => serviciosSel.includes(s.id));
+      const dur = servs.reduce((acc, s) => acc + s.duracionMin, 0);
+      const total = servs.reduce((acc, s) => acc + (barberoSel?.preciosPersonalizados?.[s.id] ?? s.precio), 0);
+
+      const nomBarbero = barberoSel ? `${barberoSel.nombre} · ` : '';
+      document.getElementById('foot-serv-count').innerText = `${nomBarbero}${servs.length} servicio(s) · ${dur} min`;
+      document.getElementById('foot-total-price').innerText = `${negocio.simboloMoneda || '$'}${total}`;
+      document.getElementById('foot-selected-slot').innerText = slotSel ? `Turno: ${formatTime12(slotSel.hora)}` : 'Elige hora';
+    }
+
+    // CONFIRMAR RESERVA
+    document.getElementById('form-cliente-reserva')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById('cli-nombre').value.trim();
+      const tel = document.getElementById('cli-tel').value.trim();
+
+      if (!nombre) {
+        showToast('Por favor escribe tu nombre', 'warning');
+        return;
+      }
+
+      if (!barberoSel || !barberoSel.id) {
+        showToast(`Por favor selecciona un ${vert?.personalSingular || 'profesional'} arriba`, 'warning');
+        return;
+      }
+
+      if (!slotSel || !slotSel.hora) {
+        showToast('Por favor selecciona una hora de cita disponible', 'warning');
+        return;
+      }
+
+      const servs = servicios.filter(s => serviciosSel.includes(s.id));
+      const dur = servs.reduce((acc, s) => acc + s.duracionMin, 0);
+
+      // Si venía de reprogramación, cancelamos la cita previa
+      if (citaEnReprogramacion) {
+        DB.actualizarEstadoCita(
+          citaEnReprogramacion.id,
+          'cancelada',
+          `Reprogramada por el cliente hacia ${fechaSel} a las ${slotSel.hora}`
+        );
+        citaEnReprogramacion = null;
+        document.getElementById('banner-reprogramacion')?.remove();
+      }
+
+      const nuevaCita = DB.crearCita({
+        negocioId: String(negocio.id),
+        barberoId: String(barberoSel.id),
+        clienteNombre: nombre,
+        clienteTelefono: tel,
+        servicios: servs.map(s => ({
+          id: s.id,
+          nombre: s.nombre,
+          duracionMin: s.duracionMin,
+          precio: barberoSel?.preciosPersonalizados?.[s.id] ?? s.precio
+        })),
+        duracionTotalMin: dur,
+        fechaLocal: fechaSel,
+        horaInicioLocal: slotSel.hora,
+        horaFinLocal: sumarMinutosAHora(slotSel.hora, dur)
+      });
+
+      showToast(`¡Cita confirmada con ${barberoSel.nombre}!`, 'success');
+      mostrarExito(nuevaCita);
+    });
+
+    // AUTOCOMPLETADO DE CLIENTES REGISTRADOS EN ESTA BARBERÍA
+    function poblarDatalistClientes() {
+      const dl = document.getElementById('dl-clientes-registrados');
+      if (!dl || !negocio) return;
+      const clientes = DB.getClientes(negocio.id);
+      dl.innerHTML = clientes.map(c => `
+        <option value="${c.nombre}">${c.nombre} · ${c.telefono || ''}</option>
+      `).join('');
+    }
+
+    const inpCliNombre = document.getElementById('cli-nombre');
+    const inpCliTel = document.getElementById('cli-tel');
+    const msgSugerencia = document.getElementById('cli-sugerencia-msg');
+
+    inpCliNombre?.addEventListener('input', (e) => {
+      const val = e.target.value.trim().toLowerCase();
+      if (val.length < 2) {
+        if (msgSugerencia) msgSugerencia.style.display = 'none';
+        return;
+      }
+      const clientes = DB.getClientes(negocio.id);
+      const match = clientes.find(c => c.nombre.toLowerCase() === val);
+      if (match && match.telefono) {
+        inpCliTel.value = match.telefono;
+        if (msgSugerencia) {
+          msgSugerencia.innerHTML = `✨ ¡Hola de nuevo, <strong>${match.nombre}</strong>! Completamos tu teléfono automáticamente.`;
+          msgSugerencia.style.display = 'block';
+        }
+      }
+    });
+
+    function mostrarExito(cita) {
+      document.getElementById('booking-wizard').style.display = 'none';
+      document.getElementById('booking-footer-bar').style.display = 'none';
+
+      // Parámetros para Google Calendar
+      const [y, m, d] = (cita.fechaLocal || '').split('-');
+      const [h1, m1] = (cita.horaInicioLocal || '09:00').split(':');
+      const [h2, m2] = (cita.horaFinLocal || cita.horaInicioLocal || '09:30').split(':');
+      const gStart = `${y}${m}${d}T${h1}${m1}00`;
+      const gEnd = `${y}${m}${d}T${h2}${m2}00`;
+      const gTitulo = encodeURIComponent(`✂️ Cita en ${negocio.nombre} (${cita.servicios.map(s => s.nombre).join(', ')})`);
+      const gDetalle = encodeURIComponent(`Barbero: ${barberoSel.nombre}\nServicios: ${cita.servicios.map(s => s.nombre).join(', ')}\nCliente: ${cita.clienteNombre}\nTeléfono: ${cita.clienteTelefono}`);
+      const gLugar = encodeURIComponent(negocio.direccion || negocio.nombre);
+      const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gTitulo}&dates=${gStart}/${gEnd}&details=${gDetalle}&location=${gLugar}`;
+
+      const cont = document.getElementById('booking-exito');
+      cont.style.display = 'block';
+      cont.innerHTML = `
+        <div class="card confirmation-card animate-fade-in" style="margin-top: 20px;">
+          <div class="confirmation-icon">✓</div>
+          <h2 class="confirmation-title">¡Cita Confirmada con Éxito!</h2>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            Te esperamos en <strong>${negocio.nombre}</strong>.
+          </p>
+
+          <div class="booking-details-box">
+            <div class="detail-row">
+              <span class="detail-label">Barbero:</span>
+              <span class="detail-val">${barberoSel.nombre}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Fecha:</span>
+              <span class="detail-val">${formatearFechaLegible(cita.fechaLocal)}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Hora:</span>
+              <span class="detail-val" style="color: var(--accent-gold); font-size: 1.15rem;">${formatTime12(cita.horaInicioLocal)}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Servicios:</span>
+              <span class="detail-val">${cita.servicios.map(s => s.nombre).join(', ')}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Cliente:</span>
+              <span class="detail-val">${cita.clienteNombre} (${cita.clienteTelefono})</span>
+            </div>
+            ${negocio.direccion ? `
+              <div class="detail-row">
+                <span class="detail-label">Dirección:</span>
+                <span class="detail-val">${negocio.direccion}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+            <a href="${googleCalUrl}" target="_blank" class="btn btn-primary btn-lg btn-full" style="background: #1a73e8; border-color: #1a73e8; text-decoration: none; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span>🗓️</span> Agregar a Google Calendar (1 Clic)
+            </a>
+            <button id="btn-dl-ics" class="btn btn-secondary btn-full" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span>🍎</span> Descargar para Apple Calendar / Outlook (.ics)
+            </button>
+            ${negocio.direccion ? `
+              <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(negocio.direccion + ' ' + negocio.nombre)}" target="_blank" class="btn btn-outline btn-full" style="display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;">
+                <span>📍</span> Cómo llegar en Google Maps
+              </a>
+            ` : ''}
+            <button id="btn-copiar-info" class="btn btn-outline btn-full">
+              📋 Copiar Resumen de la Cita
+            </button>
+            <a href="./cliente.html?b=${negocio.slug}" class="btn btn-ghost btn-full" style="margin-top: 4px;">
+              Agendar Otro Turno
+            </a>
+          </div>
+
+          <!-- ENLACE DISCRETO DE SOPORTE Y GESTIÓN -->
+          <div style="text-align: center; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border-color);">
+            <a href="#" id="link-soporte-cita" style="color: var(--text-muted); font-size: 0.84rem; text-decoration: underline; cursor: pointer;">
+              ¿Necesitas ayuda con tu turno? Soporte y gestión de cita
+            </a>
+          </div>
+        </div>
+      `;
+
+      cont.querySelector('#btn-dl-ics')?.addEventListener('click', () => {
+        descargarArchivoICS({
+          titulo: `Cita en ${negocio.nombre} (${cita.servicios.map(s => s.nombre).join(', ')})`,
+          descripcion: `Barbero: ${barberoSel.nombre}. Dirección: ${negocio.direccion || ''}`,
+          ubicacion: negocio.direccion || '',
+          inicioUTC: new Date().toISOString(),
+          finUTC: new Date().toISOString()
+        });
+        showToast('Archivo .ics descargado', 'success');
+      });
+
+      cont.querySelector('#btn-copiar-info')?.addEventListener('click', () => {
+        const txt = `✂️ Cita en ${negocio.nombre}\n📅 ${formatearFechaLegible(cita.fechaLocal)} a las ${formatTime12(cita.horaInicioLocal)}\n💈 Barbero: ${barberoSel.nombre}\n💇 ${cita.servicios.map(s => s.nombre).join(', ')}\n📍 ${negocio.direccion || ''}`;
+        navigator.clipboard?.writeText(txt).then(() => {
+          showToast('Información copiada', 'success');
+        });
+      });
+
+      cont.querySelector('#link-soporte-cita')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        abrirModalSoporteCita(cita);
+      });
+    }
+
+    // --- SOPORTE Y GESTIÓN DE CITAS (ANTICIPACIÓN Y WHATSAPP) ---
+    function calcularHorasRestantes(fechaStr, horaStr) {
+      if (!fechaStr || !horaStr) return 999;
+      const [y, m, d] = fechaStr.split('-').map(Number);
+      const [h, min] = horaStr.split(':').map(Number);
+      const fechaCita = new Date(y, m - 1, d, h, min, 0);
+      const ahora = new Date();
+      return (fechaCita.getTime() - ahora.getTime()) / (1000 * 60 * 60);
+    }
+
+    function abrirModalSoporteCita(cita) {
+      const modal = document.getElementById('modal-soporte-cita');
+      if (!modal) return;
+
+      const diffHoras = calcularHorasRestantes(cita.fechaLocal, cita.horaInicioLocal);
+
+      // Limpieza de teléfono del barbero para WhatsApp
+      const telBarberoRaw = barberoSel?.telefono || negocio?.telefono || '';
+      let telNumeros = telBarberoRaw.replace(/\D/g, '');
+      if (telNumeros.length === 10 && (telNumeros.startsWith('809') || telNumeros.startsWith('829') || telNumeros.startsWith('849'))) {
+        telNumeros = `1${telNumeros}`;
+      }
+
+      const msgWa = `Hola ${barberoSel.nombre}, te escribo respecto a mi cita para el ${formatearFechaLegible(cita.fechaLocal)} a las ${formatTime12(cita.horaInicioLocal)} en ${negocio.nombre} a nombre de ${cita.clienteNombre}. Necesito hacer una consulta sobre mi turno.`;
+      const urlWa = `https://wa.me/${telNumeros}?text=${encodeURIComponent(msgWa)}`;
+
+      const infoBox = document.getElementById('soporte-cita-info');
+      infoBox.innerHTML = `
+        <div style="font-size: 0.92rem; line-height: 1.6;">
+          <div>💈 <b>Barbero:</b> ${barberoSel.nombre}</div>
+          <div>📅 <b>Fecha:</b> ${formatearFechaLegible(cita.fechaLocal)}</div>
+          <div>⏰ <b>Hora:</b> <span style="color: var(--accent-gold); font-weight: 700;">${formatTime12(cita.horaInicioLocal)}</span></div>
+          <div>👤 <b>Cliente:</b> ${cita.clienteNombre}</div>
+          <div>💇 <b>Servicios:</b> ${(cita.servicios || []).map(s => s.nombre).join(', ')}</div>
+        </div>
+      `;
+
+      const accionesBox = document.getElementById('soporte-acciones-box');
+
+      if (diffHoras < 2) {
+        // MENOS DE 2 HORAS: RESTRINGIDO POR POLÍTICA DE RESPETO AL TIEMPO
+        accionesBox.innerHTML = `
+          <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+            <div style="font-weight: 800; color: #ef4444; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+              <span>⚠️</span> Gestión con menos de 2 horas de anticipación
+            </div>
+            <p style="font-size: 0.84rem; color: var(--text-secondary); margin: 0; line-height: 1.4;">
+              Por respeto al tiempo apartado por el barbero, los cambios inmediatos deben coordinarse directamente con él.
+            </p>
+            <p style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 6px; margin-bottom: 0; line-height: 1.4;">
+              Haz clic abajo para chatear con tu barbero vía WhatsApp:
+            </p>
+          </div>
+
+          <a href="${urlWa}" target="_blank" class="btn btn-full" style="background: #25D366; color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; padding: 12px; border-radius: 8px;">
+            <span style="font-size: 1.2rem;">💬</span> Escribir al Barbero por WhatsApp
+          </a>
+        `;
+      } else {
+        // MÁS DE 2 HORAS: PUEDE REPROGRAMAR, CANCELAR O ESCRIBIR
+        accionesBox.innerHTML = `
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.4;">
+            Cuentas con más de 2 horas de anticipación. Puedes reprogramar tu turno, cancelarlo si no puedes asistir, o comunicarte con el barbero:
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button type="button" id="btn-soporte-reprogramar" class="btn btn-primary btn-full" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; padding: 11px;">
+              <span>🔄</span> Cambiar Horario / Reprogramar
+            </button>
+
+            <a href="${urlWa}" target="_blank" class="btn btn-outline btn-full" style="display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; padding: 10px;">
+              <span>💬</span> Consultar al Barbero por WhatsApp
+            </a>
+
+            <button type="button" id="btn-soporte-cancelar" class="btn btn-ghost btn-full" style="color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px;">
+              <span>🚫</span> Cancelar mi Turno
+            </button>
+          </div>
+        `;
+
+        accionesBox.querySelector('#btn-soporte-reprogramar')?.addEventListener('click', () => {
+          modal.style.display = 'none';
+          iniciarReprogramacion(cita);
+        });
+
+        accionesBox.querySelector('#btn-soporte-cancelar')?.addEventListener('click', () => {
+          confirmarCancelacionTurno(cita, accionesBox, modal);
+        });
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function confirmarCancelacionTurno(cita, accionesBox, modal) {
+      accionesBox.innerHTML = `
+        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid #ef4444; border-radius: 8px; padding: 14px; margin-bottom: 14px; text-align: center;">
+          <span style="font-size: 2rem;">⚠️</span>
+          <h4 style="color: #ef4444; margin: 8px 0 6px;">¿Confirmas la cancelación de tu turno?</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+            Tu turno para el <b>${formatearFechaLegible(cita.fechaLocal)} a las ${formatTime12(cita.horaInicioLocal)}</b> será liberado para otros clientes y el barbero será notificado de inmediato.
+          </p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" id="btn-confirma-canc-si" class="btn btn-full" style="background: #ef4444; color: #fff; font-weight: 800;">
+            Sí, Cancelar Turno
+          </button>
+          <button type="button" id="btn-confirma-canc-no" class="btn btn-ghost btn-full">
+            No, Mantenerlo
+          </button>
+        </div>
+      `;
+
+      accionesBox.querySelector('#btn-confirma-canc-no')?.addEventListener('click', () => {
+        abrirModalSoporteCita(cita);
+      });
+
+      accionesBox.querySelector('#btn-confirma-canc-si')?.addEventListener('click', () => {
+        DB.actualizarEstadoCita(cita.id, 'cancelada', 'Cancelada por el cliente desde el soporte web');
+        showToast('Turno cancelado exitosamente', 'info');
+        modal.style.display = 'none';
+
+        // Mostrar pantalla de turno cancelado
+        const cont = document.getElementById('booking-exito');
+        cont.style.display = 'block';
+        cont.innerHTML = `
+          <div class="card confirmation-card animate-fade-in" style="margin-top: 20px; border-color: #ef4444;">
+            <div class="confirmation-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">✕</div>
+            <h2 class="confirmation-title" style="color: #ef4444;">Turno Cancelado</h2>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+              Tu cita en <strong>${negocio.nombre}</strong> ha sido cancelada y el espacio fue liberado en la agenda de ${barberoSel.nombre}.
+            </p>
+            <div style="margin-top: 20px;">
+              <a href="./cliente.html?b=${negocio.slug}" class="btn btn-primary btn-full">
+                Agendar un Nuevo Turno ✂️
+              </a>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function iniciarReprogramacion(cita) {
+      citaEnReprogramacion = cita;
+      document.getElementById('booking-exito').style.display = 'none';
+      document.getElementById('booking-wizard').style.display = 'block';
+      document.getElementById('booking-footer-bar').style.display = 'flex';
+
+      // Insertar o actualizar banner de reprogramación arriba del wizard
+      let banner = document.getElementById('banner-reprogramacion');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'banner-reprogramacion';
+        banner.className = 'card';
+        banner.style.cssText = 'background: rgba(212, 175, 55, 0.12); border: 2px dashed var(--accent-gold); margin-bottom: 20px; padding: 14px;';
+        const wizard = document.getElementById('booking-wizard');
+        wizard.insertBefore(banner, wizard.firstChild);
+      }
+
+      banner.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+          <div>
+            <h4 style="margin: 0 0 4px; color: var(--accent-gold); font-size: 1rem;">🔄 Modo de Reprogramación</h4>
+            <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">
+              Elige tu nueva fecha y hora. Tu cita anterior del <b>${formatearFechaLegible(cita.fechaLocal)} a las ${formatTime12(cita.horaInicioLocal)}</b> será sustituida sin costo adicional.
+            </p>
+          </div>
+          <button type="button" id="btn-cancelar-reprog" class="btn btn-ghost btn-sm" style="color: var(--text-muted); font-size: 0.8rem; padding: 4px 8px;">✕ Descartar</button>
+        </div>
+      `;
+
+      banner.querySelector('#btn-cancelar-reprog')?.addEventListener('click', () => {
+        citaEnReprogramacion = null;
+        banner.remove();
+        mostrarExito(cita);
+      });
+
+      // Precargar datos del cliente en el formulario
+      document.getElementById('cli-nombre').value = cita.clienteNombre || '';
+      document.getElementById('cli-tel').value = cita.clienteTelefono || '';
+
+      // Resetear slot seleccionado para forzar elección de nuevo horario
+      slotSel = null;
+      renderDias();
+      renderSlots();
+      actualizarFooter();
+
+      // Scroll arriba suave
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('Selecciona la nueva fecha y hora para tu turno', 'info');
+    }
+
+    // Eventos de cierre de modal de soporte
+    document.getElementById('btn-cerrar-soporte')?.addEventListener('click', () => {
+      document.getElementById('modal-soporte-cita').style.display = 'none';
+    });
+    document.getElementById('modal-soporte-cita')?.addEventListener('click', (e) => {
+      if (e.target.id === 'modal-soporte-cita') {
+        document.getElementById('modal-soporte-cita').style.display = 'none';
+      }
+    });
+
+    DB.subscribe(() => {
+      if (!negocio) return;
+      negocio = DB.getNegocio(negocio.id) || negocio;
+      barberos = DB.getBarberos(negocio.id).filter(b => b.activo);
+      servicios = DB.getServicios(negocio.id).filter(s => s.activo);
+
+      if (barberoSel) {
+        barberoSel = DB.getBarbero(barberoSel.id) || barberoSel;
+      }
+
+      renderBarberos();
+      renderServicios();
+      renderHorarios();
+      actualizarResumen();
+      poblarDatalistClientes();
+    });
+
+    init();
+  </script>
+</body>
+</html>

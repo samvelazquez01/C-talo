@@ -1,0 +1,367 @@
+/**
+ * Estilos para el Panel del Barbero (La Pantalla Central), Timeline y Modo Pantalla del Local
+ */
+
+.dashboard-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.barber-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.barber-select-input {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* PESTAÑAS DE VISTA (Hoy / Mañana / Semana / Mes) */
+.view-tabs {
+  display: flex;
+  background-color: var(--bg-surface);
+  padding: 4px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  gap: 4px;
+}
+
+.view-tab-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.view-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.view-tab-btn.active {
+  background-color: var(--accent-gold);
+  color: #0b0f17;
+}
+
+/* TARJETA DESTACADA: PRÓXIMA CITA */
+.hero-next-card {
+  position: relative;
+  background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(212, 175, 55, 0.08) 100%);
+  border: 2px solid var(--accent-gold);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--accent-gold);
+  color: #0b0f17;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: 14px;
+}
+
+.hero-countdown {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--accent-green-bg);
+  color: var(--accent-green);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+
+.hero-time {
+  font-size: 2.4rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--accent-gold);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.hero-client {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hero-phone-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent-blue);
+  transition: all var(--transition-fast);
+}
+
+.hero-phone-link:hover {
+  background-color: var(--bg-surface-hover);
+  border-color: var(--accent-blue);
+}
+
+.hero-service-badge {
+  display: inline-block;
+  background-color: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 10px 0 16px;
+}
+
+/* BOTONES DE ACCIÓN RÁPIDA (UN TOQUE) */
+.quick-actions-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.btn-action-status {
+  padding: 10px 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  text-align: center;
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-surface-elevated);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.btn-action-status:hover {
+  transform: translateY(-2px);
+}
+
+.btn-action-status.btn-arrived {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+.btn-action-status.btn-arrived:hover {
+  background-color: rgba(56, 189, 248, 0.15);
+}
+
+.btn-action-status.btn-progress {
+  border-color: var(--accent-amber);
+  color: var(--accent-amber);
+}
+.btn-action-status.btn-progress:hover {
+  background-color: var(--accent-amber-bg);
+}
+
+.btn-action-status.btn-done {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+.btn-action-status.btn-done:hover {
+  background-color: var(--accent-green-bg);
+}
+
+.btn-action-status.btn-noshow {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+.btn-action-status.btn-noshow:hover {
+  background-color: var(--accent-red-bg);
+}
+
+/* TARJETA DESPUÉS */
+.after-next-card {
+  background-color: var(--bg-surface);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.after-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+/* LISTA DE CITAS DEL DÍA Y HUECOS LIBRES */
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.appointment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  gap: 14px;
+  transition: border-color var(--transition-fast);
+}
+
+.appointment-item:hover {
+  border-color: var(--border-strong);
+}
+
+.app-time-col {
+  min-width: 75px;
+}
+
+.app-time {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.app-duration {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.app-client-col {
+  flex: 1;
+}
+
+.app-client-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 2px;
+}
+
+.app-service-name {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* INDICADOR DE HUECO LIBRE */
+.gap-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--accent-gold-light);
+  border: 1px dashed rgba(212, 175, 55, 0.4);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+}
+
+/* MODO PANTALLA DEL LOCAL (KIOSK MODE) */
+.kiosk-container {
+  min-height: 100vh;
+  background-color: #05070a;
+  color: #ffffff;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.kiosk-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #1e293b;
+  margin-bottom: 30px;
+}
+
+.kiosk-clock {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--accent-gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.kiosk-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  flex: 1;
+}
+
+@media (max-width: 850px) {
+  .kiosk-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kiosk-current-box {
+  background-color: #0f172a;
+  border: 3px solid var(--accent-gold);
+  border-radius: 24px;
+  padding: 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.kiosk-current-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+.kiosk-current-client {
+  font-size: 3.2rem;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 14px;
+}
+
+.kiosk-current-service {
+  font-size: 1.8rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.kiosk-queue-box {
+  background-color: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

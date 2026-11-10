@@ -1,0 +1,23 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "citas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "barberoId", "order": "ASCENDING" },
+        { "fieldPath": "fechaLocal", "order": "ASCENDING" },
+        { "fieldPath": "horaInicioLocal", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "citas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "estado", "order": "ASCENDING" },
+        { "fieldPath": "recordatorioEnviado", "order": "ASCENDING" },
+        { "fieldPath": "inicioUTC", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

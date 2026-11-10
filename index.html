@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CÍTALO | Tu cita a un click</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/icon.svg">
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/base.css">
+  <style>
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+    .hub-card {
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 26px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all var(--transition-normal);
+      text-decoration: none;
+      color: inherit;
+    }
+    .hub-card:hover {
+      border-color: var(--accent-gold);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+    }
+    .hub-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      margin-bottom: 14px;
+      align-self: flex-start;
+    }
+    .hub-icon {
+      font-size: 2.6rem;
+      margin-bottom: 10px;
+    }
+    .hub-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .hub-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 18px;
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="brand" style="display: flex; align-items: center; gap: 10px;">
+      <img id="hub-plat-logo" src="./assets/icons/icon.svg" style="width: 34px; height: 34px; border-radius: 8px; object-fit: cover; border: 1.5px solid var(--accent-gold);" alt="CÍTALO">
+      <div>
+        <span class="brand-name" style="font-weight: 900; font-size: 1.25rem;">CÍTALO</span>
+        <span style="font-size: 0.72rem; color: var(--accent-gold); font-weight: 700; display: block; line-height: 1;">Tu cita a un click</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button id="btn-theme" class="btn btn-secondary btn-icon" title="Cambiar Tema">🌙</button>
+    </div>
+  </header>
+
+  <main class="app-container" style="max-width: 960px; padding: 36px 20px 60px;">
+    <!-- HERO HEADER -->
+    <div style="text-align: center; max-width: 680px; margin: 0 auto 30px;">
+      <span style="font-size: 3.5rem;">💈💇‍♀️🖋️🌿</span>
+      <h1 style="font-size: 2.6rem; font-weight: 900; letter-spacing: -0.03em; margin: 8px 0 8px; line-height: 1.1;">
+        CÍTALO
+      </h1>
+      <p style="font-size: 1.15rem; color: var(--accent-gold); font-weight: 800; margin-bottom: 6px;">
+        Tu cita a un click
+      </p>
+      <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.5;">
+        Plataforma SaaS multi-negocio para Barberías, Salones de Belleza, Estudios de Tatuaje y Spas.
+      </p>
+
+      <div id="db-status-bar" style="margin-top: 14px; display: inline-flex; align-items: center; gap: 10px; background: var(--bg-surface-elevated); padding: 8px 18px; border-radius: var(--radius-full); border: 1px solid var(--border-subtle); font-size: 0.85rem; font-weight: 700;">
+        <span id="txt-db-status">Cargando plataforma...</span>
+      </div>
+    </div>
+
+    <!-- PANELES DE ACCESO SEGURO (CADA UNO CON SU LOGIN INDEPENDIENTE) -->
+    <div class="hub-grid">
+      <!-- 1. CREADOR / SUPERADMIN -->
+      <a href="./superadmin.html" class="hub-card" style="border-top: 4px solid var(--accent-gold);">
+        <div>
+          <span class="hub-badge badge-gold">👑 Tu Panel de Control</span>
+          <div class="hub-icon">👑</div>
+          <h2 class="hub-title">Panel del Administrador</h2>
+          <p class="hub-desc">
+            Gestiona tus negocios, cobra las instalaciones (RD$ 500) y las mensualidades por profesional (RD$ 200/mes). Libro contable de cobros, alertas y suspensiones.
+          </p>
+        </div>
+        <div class="btn btn-primary btn-full">Entrar como Administrador →</div>
+      </a>
+
+      <!-- 2. DUEÑO DE LOCAL -->
+      <a href="./dueno.html" class="hub-card" style="border-top: 4px solid var(--accent-blue);">
+        <div>
+          <span class="hub-badge" style="background: rgba(2, 132, 199, 0.15); color: var(--accent-blue);">🏢 Portal del Negocio</span>
+          <div class="hub-icon">🏢</div>
+          <h2 class="hub-title">Portal del Dueño</h2>
+          <p class="hub-desc">
+            Acceso exclusivo del dueño: crea y administra a su equipo (barberos, estilistas, tatuadores, terapeutas), asigna sus contraseñas, descarga el QR del local y gestiona servicios.
+          </p>
+        </div>
+        <div class="btn btn-secondary btn-full">Entrar Dueño de Local →</div>
+      </a>
+
+      <!-- 3. PROFESIONAL -->
+      <a href="./barbero.html" class="hub-card" style="border-top: 4px solid var(--accent-green);">
+        <div>
+          <span class="hub-badge" style="background: rgba(34, 197, 94, 0.15); color: var(--accent-green);">✂️ Estación Personal</span>
+          <div class="hub-icon">✂️</div>
+          <h2 class="hub-title">Portal del Profesional</h2>
+          <p class="hub-desc">
+            El profesional inicia sesión en su móvil: ve su próxima cita, bloquea sus horas, configura su almuerzo y descarga su QR personal para sus clientes.
+          </p>
+        </div>
+        <div class="btn btn-secondary btn-full">Abrir mi Estación →</div>
+      </a>
+    </div>
+
+    <!-- SECCIÓN DE CLIENTES -->
+    <div class="card" style="margin-top: 30px; text-align: center; padding: 24px 20px; border: 1px dashed var(--border-color);">
+      <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px;">📱 ¿Cómo reservan los Clientes?</h3>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); max-width: 580px; margin: 0 auto 12px; line-height: 1.5;">
+        Los clientes no necesitan contraseña ni crear cuentas complejas. Escanean el código QR impreso en el negocio o acceden al enlace directo que su profesional les envía por WhatsApp.
+      </p>
+      <div id="box-accesos-clientes" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <!-- Enlaces dinámicos si hay negocios creados -->
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { DB } from './js/db.js';
+    import { ThemeManager } from './js/state.js';
+
+    ThemeManager.init();
+    const btnTheme = document.getElementById('btn-theme');
+    btnTheme?.addEventListener('click', () => {
+      const nuevo = ThemeManager.toggle();
+      btnTheme.innerText = nuevo === 'dark' ? '🌙' : '☀️';
+    });
+    btnTheme.innerText = ThemeManager.getCurrent() === 'dark' ? '🌙' : '☀️';
+
+    function actualizarStatus() {
+      const db = DB.get();
+      const n = (db.negocios || []).length;
+      const b = (db.barberos || []).length;
+      const c = (db.citas || []).length;
+      const plat = DB.getPlataforma?.() || { nombre: 'CÍTALO', eslogan: 'Tu cita a un click' };
+
+      const logoEl = document.getElementById('hub-plat-logo');
+      if (logoEl && plat.logoUrl) logoEl.src = plat.logoUrl;
+
+      const txt = document.getElementById('txt-db-status');
+      if (n === 0) {
+        txt.innerHTML = '🟢 Base de datos: <span style="color:var(--accent-green)">Lista para datos reales (0 Negocios)</span>';
+      } else {
+        txt.innerHTML = `📦 <span style="color:var(--accent-gold);">${n} Negocio(s) activos · ${b} Profesional(es) · ${c} Citas</span>`;
+      }
+
+      const boxCli = document.getElementById('box-accesos-clientes');
+      if (n > 0) {
+        boxCli.innerHTML = db.negocios.slice(0, 4).map(neg => `
+          <a href="./cliente.html?b=${neg.slug}" target="_blank" class="btn btn-outline btn-sm">
+            📱 Portal: ${neg.nombre}
+          </a>
+        `).join('');
+      } else {
+        boxCli.innerHTML = '<span style="font-size:0.85rem; color:var(--text-muted);">Comienza registrando tu primer negocio desde el Panel Administrador.</span>';
+      }
+    }
+
+    DB.subscribe(() => actualizarStatus());
+    actualizarStatus();
+  </script>
+</body>
+</html>

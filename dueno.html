@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal del Negocio | CÍTALO</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/icon.svg">
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/base.css">
+</head>
+<body>
+  <!-- PANTALLA DE LOGIN DEL DUEÑO (SI NO HAY SESIÓN ACTIVA) -->
+  <div id="pantalla-login-dueno" style="display: none; min-height: 100vh; align-items: center; justify-content: center; padding: 20px;">
+    <div class="card" style="max-width: 420px; width: 100%; padding: 32px 26px; border: 2px solid var(--accent-gold); box-shadow: 0 16px 36px rgba(0,0,0,0.4); text-align: center;">
+      <span style="font-size: 3rem;">🏢</span>
+      <h2 style="font-size: 1.6rem; font-weight: 900; margin: 10px 0 6px;">Portal del Negocio</h2>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 22px;">
+        Inicia sesión para gestionar tu equipo, servicios y citas. Tu sesión se mantendrá abierta permanentemente.
+      </p>
+
+      <form id="form-login-dueno" style="text-align: left;">
+        <div class="form-group">
+          <label class="form-label">Usuario o Identificador de tu Negocio *</label>
+          <input type="text" id="dueno-login-user" class="form-input" required placeholder="Ej: admin-imperio" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña *</label>
+          <input type="password" id="dueno-login-pass" class="form-input" required placeholder="Tu contraseña" autocomplete="current-password">
+        </div>
+        <div id="login-dueno-error" style="display: none; color: #ef4444; font-size: 0.85rem; font-weight: 700; margin-bottom: 12px; text-align: center;">
+          Usuario o contraseña incorrectos
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top: 8px;">
+          Ingresar a Mi Negocio 🚀
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PANEL PRINCIPAL DEL DUEÑO -->
+  <div id="pantalla-panel-dueno" style="display: none;">
+    <!-- NAVBAR AISLADO (SIN NAVEGACIÓN CRUZADA) -->
+    <header class="navbar">
+      <div class="brand" style="display: flex; align-items: center; gap: 10px;">
+        <img id="dueno-plataforma-logo" src="./assets/icons/icon.svg" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; border: 1.5px solid var(--accent-gold);" alt="CÍTALO">
+        <div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-weight: 900; font-size: 1.15rem; letter-spacing: 0.5px;">CÍTALO</span>
+            <span style="color: var(--text-muted); font-size: 0.9rem;">·</span>
+            <span id="nav-biz-title" style="font-weight: 700; font-size: 0.95rem; color: var(--accent-gold);">Portal del Dueño</span>
+          </div>
+          <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1;">Tu cita a un click</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button id="btn-qr-portal" class="btn btn-primary btn-sm" title="Ver enlace y código QR del negocio">
+          📱 QR Local
+        </button>
+        <button id="btn-theme" class="btn btn-ghost btn-icon">🌙</button>
+        <button id="btn-logout-dueno" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
+          🚪 Cerrar Sesión
+        </button>
+      </div>
+    </header>
+
+    <main class="app-container" style="max-width: 980px; padding-top: 20px; padding-bottom: 60px;">
+      <!-- ENCABEZADO DEL NEGOCIO -->
+      <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border: 1.5px solid var(--accent-gold); margin-bottom: 22px; flex-wrap: wrap; gap: 14px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <img id="biz-logo" src="./assets/icons/icon.svg" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-gold);" alt="Logo">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h2 id="txt-biz-nombre" style="font-weight: 800; font-size: 1.35rem; margin: 0;">Mi Negocio</h2>
+              <button id="btn-editar-biz" class="btn btn-ghost btn-sm" title="Editar datos y foto del local">✏️ Editar Datos</button>
+            </div>
+            <p id="biz-desc" style="color: var(--text-secondary); font-size: 0.88rem; margin-top: 2px;">Cargando datos...</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-copiar-portal" class="btn btn-secondary btn-sm">🔗 Copiar Enlace Público</button>
+          <a id="link-ver-portal" href="#" target="_blank" class="btn btn-primary btn-sm">📱 Ver Portal Público</a>
+        </div>
+      </div>
+
+      <!-- ALERTA DE CONFIGURACIÓN FIREBASE (SI ESTÁ BLOQUEADO) -->
+      <div id="banner-firebase-bloqueado" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1.5px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+        <div style="font-weight: 800; color: #f59e0b; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+          <span>⚠️</span> Sincronización en la Nube Bloqueada en Firebase
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0 0;">
+          Tus reglas de Firebase Realtime Database están en <code>.read: false, .write: false</code>. Las citas agendadas desde celulares o en modo incógnito no se reflejarán hasta que pongas <code>.read: true, .write: true</code> en las Reglas de Firebase Console.
+        </p>
+      </div>
+
+      <!-- ALERTA DE SUSCRIPCIÓN DEL LOCAL -->
+      <div id="banner-suscripcion-dueno" style="display: none; background: rgba(239, 68, 68, 0.12); border: 1.5px solid var(--accent-red); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+        <div style="font-weight: 800; color: var(--accent-red); font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+          <span>⛔</span> Suscripción del Negocio Cancelada o Suspendida
+        </div>
+        <p id="txt-suscripcion-dueno" style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0 0;">
+          El portal de reservas para clientes se encuentra pausado. Comunícate con el Administrador de CÍTALO para reactivar tu cuenta.
+        </p>
+      </div>
+
+      <!-- PESTAÑAS DE ADMINISTRACIÓN -->
+      <div class="view-tabs" style="margin-bottom: 20px;">
+        <button class="view-tab-btn active" id="tab-barberos">💈 Mis Profesionales</button>
+        <button class="view-tab-btn" id="tab-servicios">✂️ Servicios y Tratamientos</button>
+        <button class="view-tab-btn" id="tab-citas">📋 Citas del Local</button>
+        <button class="view-tab-btn" id="tab-clientes">👥 Directorio de Clientes</button>
+        <button class="view-tab-btn" id="tab-stats-negocio">📊 Estadísticas del Local</button>
+      </div>
+
+      <!-- SECCIÓN 1: MIS PROFESIONALES -->
+      <section id="sec-barberos">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 id="sec-barberos-title" style="font-size: 1.3rem; font-weight: 800;">Equipo del Local</h3>
+            <p id="sec-barberos-desc" style="font-size: 0.85rem; color: var(--text-secondary);">
+              Agrega a cada profesional y asígnale su usuario y contraseña para que atienda su propio espacio.
+            </p>
+          </div>
+          <button id="btn-nuevo-barbero" class="btn btn-primary btn-sm">+ Agregar Profesional</button>
+        </div>
+        <div id="grid-barberos" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px;">
+          <!-- Tarjetas dinámicas -->
+        </div>
+      </section>
+
+      <!-- SECCIÓN 2: SERVICIOS -->
+      <section id="sec-servicios" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 id="sec-servicios-title" style="font-size: 1.3rem; font-weight: 800;">Catálogo de Servicios</h3>
+            <p id="sec-servicios-desc" style="color: var(--text-secondary); font-size: 0.88rem;">Crea los servicios con su precio y duración.</p>
+          </div>
+          <button id="btn-nuevo-servicio" class="btn btn-primary btn-sm">+ Nuevo Corte / Servicio</button>
+        </div>
+        <div id="lista-servicios" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Lista dinámica -->
+        </div>
+      </section>
+
+      <!-- SECCIÓN 3: CITAS GENERALES DEL LOCAL -->
+      <section id="sec-citas" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 style="font-size: 1.3rem; font-weight: 800;">Agenda General de la Peluquería</h3>
+            <p style="color: var(--text-secondary); font-size: 0.88rem;">Todas las reservas agendadas en tu local.</p>
+          </div>
+          <div style="font-weight: 800; color: var(--accent-gold); font-size: 1.1rem;" id="total-ingresos-dia">
+            Ingresos: RD$ 0
+          </div>
+        </div>
+        <div id="lista-citas-local" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Lista dinámica -->
+        </div>
+      </section>
+
+      <!-- SECCIÓN 4: DIRECTORIO DE CLIENTES -->
+      <section id="sec-clientes" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 style="font-size: 1.3rem; font-weight: 800;">👥 Directorio de Clientes del Local</h3>
+            <p style="color: var(--text-secondary); font-size: 0.88rem;">
+              Clientes registrados automáticamente al agendar. Facilita reservas futuras con autocompletado.
+            </p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="inp-buscar-clientes" class="form-input" placeholder="🔍 Buscar por nombre o teléfono..." style="width: 250px; padding: 6px 12px; font-size: 0.88rem;">
+            <span id="badge-total-clientes" class="badge badge-gold" style="font-size: 0.88rem;">0 clientes</span>
+          </div>
+        </div>
+        <div id="lista-clientes-dueno" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Lista dinámica -->
+        </div>
+      </section>
+
+      <!-- SECCIÓN 5: ESTADÍSTICAS DEL LOCAL -->
+      <section id="sec-stats-negocio" style="display: none;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 24px;">
+          <div class="card" style="padding: 16px; margin: 0;">
+            <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Citas Totales</span>
+            <div id="biz-stat-citas" style="font-size: 2.2rem; font-weight: 900; color: var(--text-primary); margin-top: 4px;">0</div>
+          </div>
+          <div class="card" style="padding: 16px; margin: 0;">
+            <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Ingresos Totales</span>
+            <div id="biz-stat-ingresos" style="font-size: 2.2rem; font-weight: 900; color: var(--accent-gold); margin-top: 4px;">RD$ 0</div>
+          </div>
+          <div class="card" style="padding: 16px; margin: 0;">
+            <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Completadas</span>
+            <div id="biz-stat-completadas" style="font-size: 2.2rem; font-weight: 900; color: var(--accent-green); margin-top: 4px;">0</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { DB, VERTICALES } from './js/db.js';
+    import { Auth } from './js/auth.js';
+    import { ThemeManager, showToast } from './js/state.js';
+    import { subirImagenAImgBB } from './js/utils/image-compressor.js';
+    import { renderizarQR, descargarQR } from './js/utils/qr-generator.js';
+
+    ThemeManager.init();
+    document.getElementById('btn-theme')?.addEventListener('click', () => {
+      const nuevo = ThemeManager.toggle();
+      document.getElementById('btn-theme').innerText = nuevo === 'dark' ? '🌙' : '☀️';
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const bizParam = urlParams.get('biz');
+
+    let negocioActual = null;
+
+    // CONTROL DE SESIÓN PERSISTENTE
+    function verificarSesion() {
+      let sesion = Auth.getDuenoSession();
+
+      // Si viene por parámetro ?biz=slug y no hay sesión o es de otro negocio, verificar si coincide
+      if (bizParam) {
+        const negocioParam = DB.getNegocio(bizParam);
+        if (negocioParam && (!sesion || sesion.negocioId !== negocioParam.id)) {
+          // Si el superadmin accede directamente o la URL es específica, autenticar automáticamente
+          sesion = {
+            negocioId: negocioParam.id,
+            slug: negocioParam.slug,
+            nombre: negocioParam.nombre,
+            usuario: negocioParam.cuenta?.usuario || negocioParam.slug,
+            loggedAt: Date.now()
+          };
+          localStorage.setItem('agendabarber_auth_dueno', JSON.stringify(sesion));
+        }
+      }
+
+      if (!sesion) {
+        document.getElementById('pantalla-login-dueno').style.display = 'flex';
+        document.getElementById('pantalla-panel-dueno').style.display = 'none';
+        if (bizParam) {
+          const inpUser = document.getElementById('dueno-login-user');
+          if (inpUser) inpUser.value = bizParam;
+        }
+      } else {
+        document.getElementById('pantalla-login-dueno').style.display = 'none';
+        document.getElementById('pantalla-panel-dueno').style.display = 'block';
+        negocioActual = DB.getNegocio(sesion.negocioId) || DB.getNegocios()[0];
+        renderTodo();
+      }
+    }
+
+    // FORMULARIO DE LOGIN DEL DUEÑO
+    document.getElementById('form-login-dueno')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const user = document.getElementById('dueno-login-user').value.trim();
+      const pass = document.getElementById('dueno-login-pass').value.trim();
+      const res = Auth.loginDueno(user, pass);
+      if (res.ok) {
+        document.getElementById('login-dueno-error').style.display = 'none';
+        showToast(`¡Bienvenido a ${res.negocio.nombre}!`, 'success');
+        verificarSesion();
+      } else {
+        document.getElementById('login-dueno-error').style.display = 'block';
+      }
+    });
+
+    // CERRAR SESIÓN DEL DUEÑO
+    document.getElementById('btn-logout-dueno')?.addEventListener('click', () => {
+      if (confirm('¿Cerrar sesión de esta barbería?')) {
+        Auth.logoutDueno();
+        showToast('Sesión de barbería cerrada', 'info');
+        verificarSesion();
+      }
+    });
+
+    // PESTAÑAS
+    const tabs = ['barberos', 'servicios', 'citas', 'clientes', 'stats-negocio'];
+    tabs.forEach(t => {
+      document.getElementById(`tab-${t}`)?.addEventListener('click', () => {
+        tabs.forEach(x => {
+          document.getElementById(`tab-${x}`)?.classList.remove('active');
+          const sec = document.getElementById(`sec-${x}`);
+          if (sec) sec.style.display = 'none';
+        });
+        document.getElementById(`tab-${t}`)?.classList.add('active');
+        const activeSec = document.getElementById(`sec-${t}`);
+        if (activeSec) activeSec.style.display = 'block';
+      });
+    });
+
+    function getVerticalActual() {
+      const tipo = negocioActual?.tipoNegocio || 'barberia';
+      return (VERTICALES && VERTICALES[tipo]) || (DB.VERTICALES && DB.VERTICALES[tipo]) || {
+        nombre: 'Barbería',
+        personalSingular: 'Barbero',
+        personalPlural: 'Barberos',
+        servicioSingular: 'Corte',
+        servicioPlural: 'Cortes y Servicios',
+        sillonOEspacio: 'Sillón',
+        icono: '💈'
+      };
+    }
+
+    function renderTodo() {
+      if (!negocioActual) return;
+
+      const tipo = negocioActual.tipoNegocio || 'barberia';
+      document.documentElement.dataset.vertical = tipo;
+      const vert = getVerticalActual();
+      const plat = DB.getPlataforma?.() || { nombre: 'CÍTALO', eslogan: 'Tu cita a un click' };
+
+      const platLogo = document.getElementById('dueno-plataforma-logo');
+      if (platLogo) platLogo.src = plat.logoUrl || './assets/icons/icon.svg';
+
+      const monedaSimbolo = negocioActual.moneda === 'USD' ? '$' : 'RD$';
+      document.getElementById('nav-biz-title').innerText = negocioActual.nombre;
+      document.getElementById('txt-biz-nombre').innerText = negocioActual.nombre;
+      document.getElementById('biz-logo').src = negocioActual.logoUrl || './assets/icons/icon.svg';
+      document.getElementById('biz-desc').innerText = `${vert.icono} ${vert.nombre} · ${negocioActual.direccion || 'Sin dirección'} · Tel: ${negocioActual.telefono || 'Sin teléfono'} · Moneda: ${monedaSimbolo} · Enlace: /cliente.html?b=${negocioActual.slug}`;
+
+      // Alerta de suscripción del negocio
+      const bannerSusc = document.getElementById('banner-suscripcion-dueno');
+      const estSusc = negocioActual.suscripcion?.estado || (negocioActual.activo ? 'activa' : 'suspendida');
+      if (bannerSusc) {
+        if (estSusc === 'cancelada' || estSusc === 'suspendida') {
+          bannerSusc.style.display = 'block';
+          const txtS = document.getElementById('txt-suscripcion-dueno');
+          if (txtS) txtS.innerText = `Tu local se encuentra marcado como ${estSusc.toUpperCase()}. Las citas públicas en línea están pausadas hasta que se regularice la suscripción con el Administrador de CÍTALO.`;
+        } else {
+          bannerSusc.style.display = 'none';
+        }
+      }
+
+      // Pestañas
+      const tabB = document.getElementById('tab-barberos');
+      if (tabB) tabB.innerHTML = `${vert.icono} Mis ${vert.personalPlural}`;
+      const tabS = document.getElementById('tab-servicios');
+      if (tabS) tabS.innerHTML = `✂️ ${vert.servicioPlural}`;
+
+      // Encabezados dinámicos de sección
+      const titSecB = document.getElementById('sec-barberos-title');
+      if (titSecB) titSecB.innerText = `Equipo de ${vert.personalPlural} del Local`;
+      const descSecB = document.getElementById('sec-barberos-desc');
+      if (descSecB) descSecB.innerText = `Agrega a cada ${vert.personalSingular.toLowerCase()} y asígnale su usuario y contraseña para que atienda su propio ${vert.sillonOEspacio.toLowerCase()}.`;
+      const btnNB = document.getElementById('btn-nuevo-barbero');
+      if (btnNB) btnNB.innerText = `+ Crear ${vert.personalSingular} ${vert.icono}`;
+
+      const titSecS = document.getElementById('sec-servicios-title');
+      if (titSecS) titSecS.innerText = `Catálogo de ${vert.servicioPlural}`;
+      const descSecS = document.getElementById('sec-servicios-desc');
+      if (descSecS) descSecS.innerText = `Crea los ${vert.servicioPlural.toLowerCase()} con su precio y duración.`;
+      const btnNS = document.getElementById('btn-nuevo-servicio');
+      if (btnNS) btnNS.innerText = `+ Crear ${vert.servicioSingular} ${vert.icono}`;
+
+      const linkPortal = document.getElementById('link-ver-portal');
+      if (linkPortal) linkPortal.href = `./cliente.html?b=${negocioActual.slug}`;
+
+      renderBarberos(vert);
+      renderServicios(vert);
+      renderCitas();
+      renderClientes();
+      renderStatsNegocio();
+    }
+
+    // 1. RENDER PERSONAL / BARBEROS
+    function renderBarberos(vert = getVerticalActual()) {
+      const barberos = DB.getBarberos(negocioActual.id);
+      const grid = document.getElementById('grid-barberos');
+
+      if (barberos.length === 0) {
+        grid.innerHTML = `
+          <div class="card" style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 36px 20px; background: var(--bg-surface-elevated);">
+            <span style="font-size: 2.5rem;">${vert.icono}</span>
+            <h4 style="font-weight: 800; font-size: 1.15rem; margin-top: 8px;">Aún no tienes ${vert.personalPlural.toLowerCase()} registrados</h4>
+            <p style="font-size: 0.9rem; margin: 4px auto 16px; max-width: 440px;">
+              Cada ${vert.personalSingular.toLowerCase()} que crees tendrá sus credenciales para entrar a su ${vert.sillonOEspacio.toLowerCase()} y su enlace propio con QR.
+            </p>
+            <button id="btn-empty-barbero" class="btn btn-primary">
+              + Agregar Primer ${vert.personalSingular}
+            </button>
+          </div>
+        `;
+        document.getElementById('btn-empty-barbero')?.addEventListener('click', () => abrirModalBarbero());
+        return;
+      }
+
+      grid.innerHTML = barberos.map(b => {
+        const cuenta = b.cuenta || { usuario: b.slug, password: '••••' };
+        const susc = b.suscripcion || {};
+        const est = susc.estadoPago;
+
+        let badgeSusc = `<span class="badge badge-green" style="font-size: 0.72rem;">RD$ 200/mes · Al día</span>`;
+        if (est === 'por_vencer') {
+          badgeSusc = `<span class="badge badge-gold" style="font-size: 0.72rem;">RD$ 200/mes · Por vencer</span>`;
+        } else if (est === 'prorroga') {
+          badgeSusc = `<span class="badge badge-blue" style="font-size: 0.72rem;">RD$ 200/mes · En prórroga</span>`;
+        } else if (est === 'vencido' || est === 'suspendido') {
+          badgeSusc = `<span class="badge badge-red" style="font-size: 0.72rem;">⛔ Agenda Pausada</span>`;
+        }
+
+        return `
+          <div class="card" style="padding: 16px; margin: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; border: 1px solid var(--border-subtle);">
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <img src="${b.fotoUrl || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&q=80'}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-gold);" alt="${b.nombre}">
+                  <div>
+                    <h4 style="font-weight: 800; font-size: 1.05rem; margin: 0;">${b.nombre}</h4>
+                    <span class="badge ${b.activo ? 'badge-green' : 'badge-muted'}" style="font-size: 0.72rem;">${b.activo ? 'Activo' : 'Inactivo'}</span>
+                  </div>
+                </div>
+                <button class="btn btn-ghost btn-sm btn-edit-b" data-id="${b.id}" title="Editar ${vert.personalSingular}">✏️</button>
+              </div>
+
+              <p style="font-size: 0.84rem; color: var(--text-secondary); margin: 4px 0 2px;">
+                ${vert.icono} ${b.especialidad || (vert.personalSingular + ' profesional')} · 📞 ${b.telefono || 'Sin tel'}
+              </p>
+
+              <!-- CREDENCIALES DEL PERSONAL -->
+              <div style="background: var(--bg-surface-elevated); border-radius: 6px; padding: 6px 10px; margin-top: 6px; font-size: 0.8rem;">
+                <div>👤 <b>Usuario:</b> <code>${cuenta.usuario || b.slug}</code></div>
+                <div>🔑 <b>Clave:</b> <code>${cuenta.password || '1234'}</code></div>
+              </div>
+
+              <div style="margin-top: 6px;">
+                ${badgeSusc}
+              </div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 10px; display: flex; gap: 6px; align-items: center;">
+              <button class="btn btn-primary btn-sm btn-full btn-qr-barbero" data-slug="${b.slug}" data-nombre="${b.nombre}">
+                📱 QR Personal
+              </button>
+              <button class="btn btn-ghost btn-sm btn-del-b" data-id="${b.id}" style="color: var(--accent-red);" title="Eliminar ${vert.personalSingular}">
+                ✕
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      grid.querySelectorAll('.btn-edit-b').forEach(b => {
+        b.addEventListener('click', () => {
+          const barbero = DB.getBarbero(b.dataset.id);
+          if (barbero) abrirModalBarbero(barbero);
+        });
+      });
+
+      grid.querySelectorAll('.btn-qr-barbero').forEach(b => {
+        b.addEventListener('click', () => {
+          const slug = b.dataset.slug;
+          const nombre = b.dataset.nombre;
+          const urlBarbero = `${window.location.origin}/cliente.html?b=${negocioActual.slug}&barbero=${slug}`;
+          mostrarModalQR(urlBarbero, `QR de ${nombre}`, `${slug}-qr-personal.png`);
+        });
+      });
+
+      grid.querySelectorAll('.btn-del-b').forEach(b => {
+        b.addEventListener('click', () => {
+          if (confirm(`¿Eliminar a este ${vert.personalSingular.toLowerCase()} y sus turnos?`)) {
+            DB.eliminarBarbero(b.dataset.id);
+            showToast(`${vert.personalSingular} eliminado`, 'info');
+            renderBarberos(vert);
+          }
+        });
+      });
+    }
+
+    // MODAL CREAR / EDITAR BARBERO / PERSONAL
+    function abrirModalBarbero(barbero = null) {
+      const vert = getVerticalActual();
+      const isEdit = Boolean(barbero);
+      const servicios = DB.getServicios(negocioActual.id);
+      const cuenta = barbero?.cuenta || { usuario: '', password: '1234' };
+      const tipo = negocioActual?.tipoNegocio || 'barberia';
+
+      let placeholderEsp = 'Ej: Degradados, Barba a navaja, Estilo urbano...';
+      let placeholderNombre = 'Ej: Carlos Pérez';
+      let defaultFoto = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400&q=80';
+      if (tipo === 'salon') {
+        placeholderEsp = 'Ej: Balayage, Tintes, Peinados, Manicura, Keratina...';
+        placeholderNombre = 'Ej: Carolina Méndez';
+        defaultFoto = 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=400&q=80';
+      } else if (tipo === 'tatuaje') {
+        placeholderEsp = 'Ej: Realismo, Blackwork, Línea Fina, Piercing...';
+        placeholderNombre = 'Ej: Alex Tatuajes';
+        defaultFoto = 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=400&q=80';
+      } else if (tipo === 'spa') {
+        placeholderEsp = 'Ej: Masajes Relajantes, Drenaje Linfático, Reflexología...';
+        placeholderNombre = 'Ej: Laura Gómez';
+        defaultFoto = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=80';
+      }
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 480px;">
+          <div class="modal-header">
+            <h3 class="modal-title">${isEdit ? '✏️ Editar ' + vert.personalSingular : '+ Crear ' + vert.personalSingular + ' ' + vert.icono}</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-barbero-crud">
+              <div class="form-group">
+                <label class="form-label">Nombre y Apellido de ${vert.personalSingular} *</label>
+                <input type="text" id="b-nombre" class="form-input" required value="${barbero?.nombre || ''}" placeholder="${placeholderNombre}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Especialidad</label>
+                <input type="text" id="b-esp" class="form-input" value="${barbero?.especialidad || ''}" placeholder="${placeholderEsp}">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Teléfono Móvil</label>
+                  <input type="tel" id="b-tel" class="form-input" value="${barbero?.telefono || ''}" placeholder="8095551234">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Identificador (Slug)</label>
+                  <input type="text" id="b-slug" class="form-input" value="${barbero?.slug || ''}" placeholder="${tipo === 'salon' ? 'carolina' : 'carlos'}">
+                </div>
+              </div>
+
+              <!-- CREDENCIALES DE ACCESO -->
+              <div style="background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin: 12px 0;">
+                <h4 style="font-size: 0.92rem; margin-bottom: 8px; color: var(--accent-gold);">👤 Credenciales de Acceso para ${vert.personalSingular}</h4>
+                <div class="form-row">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" id="b-user" class="form-input" required value="${cuenta.usuario || ''}" placeholder="Ej: ${tipo === 'salon' ? 'carolina' : 'carlos'} o teléfono">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Contraseña</label>
+                    <input type="text" id="b-pass" class="form-input" required value="${cuenta.password || '1234'}">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Foto de Perfil (ImgBB)</label>
+                <input type="file" id="b-foto-file" accept="image/*" class="form-input" style="padding: 6px;">
+                <small id="b-foto-status" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; display: block;">
+                  Foto real de ${vert.personalSingular.toLowerCase()} (se comprime y sube automáticamente a ImgBB).
+                </small>
+              </div>
+
+              <button type="submit" id="btn-save-barbero" class="btn btn-primary btn-full">${isEdit ? 'Guardar Cambios' : 'Crear ' + vert.personalSingular + ' ' + vert.icono}</button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      const inpN = modal.querySelector('#b-nombre');
+      const inpS = modal.querySelector('#b-slug');
+      const inpU = modal.querySelector('#b-user');
+
+      if (!isEdit) {
+        inpN?.addEventListener('input', (e) => {
+          const val = e.target.value.toLowerCase().split(' ')[0].replace(/[^a-z0-9]/g, '');
+          inpS.value = val;
+          if (!inpU.value) inpU.value = val;
+        });
+      }
+
+      modal.querySelector('#form-barbero-crud')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btnSave = modal.querySelector('#btn-save-barbero');
+        const fileInp = modal.querySelector('#b-foto-file');
+        const statusTxt = modal.querySelector('#b-foto-status');
+
+        let fotoUrl = barbero?.fotoUrl;
+
+        if (fileInp?.files?.length > 0) {
+          btnSave.disabled = true;
+          btnSave.innerText = 'Subiendo foto a ImgBB...';
+          statusTxt.innerText = '⏳ Subiendo a ImgBB...';
+          try {
+            fotoUrl = await subirImagenAImgBB(fileInp.files[0]);
+            showToast('Foto subida con éxito', 'success');
+          } catch (err) {
+            console.warn('Error foto:', err);
+            showToast('No se pudo subir la foto: ' + err.message, 'warning');
+          }
+        }
+
+        const usuario = inpU.value.trim();
+        const password = modal.querySelector('#b-pass').value.trim();
+
+        const payload = {
+          nombre: inpN.value.trim(),
+          slug: inpS.value.trim() || vert.personalSingular.toLowerCase(),
+          especialidad: modal.querySelector('#b-esp').value.trim(),
+          telefono: modal.querySelector('#b-tel').value.trim(),
+          cuenta: { usuario, password },
+          ...(fotoUrl ? { fotoUrl } : {})
+        };
+
+        if (isEdit) {
+          DB.actualizarBarbero(barbero.id, payload);
+          showToast(`¡${vert.personalSingular} actualizado(a) con éxito!`, 'success');
+        } else {
+          DB.crearBarbero(negocioActual.id, {
+            ...payload,
+            serviciosActivos: servicios.map(s => s.id),
+            fotoUrl: fotoUrl || defaultFoto
+          });
+          showToast(`¡${vert.personalSingular} creado(a) con sus credenciales de acceso!`, 'success');
+        }
+
+        cerrar();
+        renderBarberos();
+      });
+    }
+
+    document.getElementById('btn-nuevo-barbero')?.addEventListener('click', () => abrirModalBarbero());
+
+    // 2. RENDER SERVICIOS
+    function renderServicios(vert = getVerticalActual()) {
+      const servicios = DB.getServicios(negocioActual.id);
+      const lista = document.getElementById('lista-servicios');
+      const simbolo = negocioActual.moneda === 'USD' ? '$' : 'RD$';
+
+      if (servicios.length === 0) {
+        lista.innerHTML = `
+          <div class="card" style="text-align: center; color: var(--text-secondary); padding: 36px 20px; background: var(--bg-surface-elevated);">
+            <span style="font-size: 2.5rem;">${vert.icono}</span>
+            <h4 style="font-weight: 800; font-size: 1.15rem; margin-top: 8px;">No has creado ${vert.servicioPlural.toLowerCase()} aún</h4>
+            <button id="btn-empty-servicio" class="btn btn-primary" style="margin-top: 10px;">
+              + Crear Primer ${vert.servicioSingular}
+            </button>
+          </div>
+        `;
+        document.getElementById('btn-empty-servicio')?.addEventListener('click', () => abrirModalServicio());
+        return;
+      }
+
+      lista.innerHTML = servicios.map(s => `
+        <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; margin: 0; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h4 style="font-weight: 800; font-size: 1.05rem; margin: 0;">${s.nombre}</h4>
+              <span class="badge ${s.activo ? 'badge-green' : 'badge-muted'}">${s.activo ? 'Activo' : 'Pausado'}</span>
+            </div>
+            ${s.descripcion ? `<p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">${s.descripcion}</p>` : ''}
+            <div style="font-size: 0.84rem; color: var(--text-muted); margin-top: 4px;">
+              ⏱ ${s.duracionMin} min · Limpieza post: ${s.descansoPostMin || 0} min
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-weight: 800; font-size: 1.2rem; color: var(--accent-gold);">${simbolo}${s.precio}</span>
+            <button class="btn btn-ghost btn-sm btn-edit-s" data-id="${s.id}">✏️</button>
+            <button class="btn btn-ghost btn-sm btn-del-s" data-id="${s.id}" style="color: var(--accent-red);">✕</button>
+          </div>
+        </div>
+      `).join('');
+
+      lista.querySelectorAll('.btn-edit-s').forEach(b => {
+        b.addEventListener('click', () => {
+          const s = DB.getServicios(negocioActual.id).find(x => x.id === b.dataset.id);
+          if (s) abrirModalServicio(s);
+        });
+      });
+
+      lista.querySelectorAll('.btn-del-s').forEach(b => {
+        b.addEventListener('click', () => {
+          if (confirm('¿Eliminar este servicio del catálogo?')) {
+            DB.eliminarServicio(b.dataset.id);
+            showToast('Servicio eliminado', 'info');
+            renderServicios();
+          }
+        });
+      });
+    }
+
+    function abrirModalServicio(serv = null) {
+      const vert = getVerticalActual();
+      const isEdit = Boolean(serv);
+      const tipo = negocioActual?.tipoNegocio || 'barberia';
+      const simbolo = negocioActual.moneda === 'USD' ? 'USD ($)' : 'RD$ (Peso Dominicano)';
+      
+      let placeholderServ = 'Ej: Corte Degradado + Barba';
+      if (tipo === 'salon') placeholderServ = 'Ej: Balayage + Secado Estilizado';
+      else if (tipo === 'tatuaje') placeholderServ = 'Ej: Sesión Blackwork (2 horas)';
+      else if (tipo === 'spa') placeholderServ = 'Ej: Masaje Descontracturante con Piedras';
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 440px;">
+          <div class="modal-header">
+            <h3 class="modal-title">${isEdit ? '✏️ Editar ' + vert.servicioSingular : '+ Nuevo(a) ' + vert.servicioSingular + ' ' + vert.icono}</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-serv-crud">
+              <div class="form-group">
+                <label class="form-label">Nombre de ${vert.servicioSingular} *</label>
+                <input type="text" id="s-nombre" class="form-input" required value="${serv?.nombre || ''}" placeholder="${placeholderServ}">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Precio (${simbolo}) *</label>
+                  <input type="number" id="s-precio" class="form-input" required min="0" value="${serv?.precio ?? (negocioActual.moneda === 'USD' ? 15 : 400)}">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Duración (min) *</label>
+                  <input type="number" id="s-dur" class="form-input" required min="5" step="5" value="${serv?.duracionMin || 30}">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tiempo de Limpieza Post-Corte (min)</label>
+                <input type="number" id="s-descanso" class="form-input" min="0" step="5" value="${serv?.descansoPostMin || 5}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <textarea id="s-desc" class="form-textarea" rows="2" placeholder="Lavado, toalla caliente y navaja...">${serv?.descripcion || ''}</textarea>
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">${isEdit ? 'Guardar Cambios' : 'Crear Servicio'}</button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#form-serv-crud')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const payload = {
+          nombre: modal.querySelector('#s-nombre').value.trim(),
+          duracionMin: Number(modal.querySelector('#s-dur').value) || 30,
+          precio: Number(modal.querySelector('#s-precio').value) || 0,
+          descansoPostMin: Number(modal.querySelector('#s-descanso').value) || 0,
+          descripcion: modal.querySelector('#s-desc').value.trim()
+        };
+
+        if (isEdit) {
+          DB.actualizarServicio(serv.id, payload);
+          showToast('Servicio actualizado', 'success');
+        } else {
+          DB.crearServicio(negocioActual.id, payload);
+          showToast('Servicio agregado al catálogo', 'success');
+        }
+
+        cerrar();
+        renderServicios();
+      });
+    }
+
+    document.getElementById('btn-nuevo-servicio')?.addEventListener('click', () => abrirModalServicio());
+
+    // 3. RENDER CITAS DEL LOCAL
+    function renderCitas() {
+      const citas = DB.getCitas(negocioActual.id);
+      const cont = document.getElementById('lista-citas-local');
+      const simbolo = negocioActual.moneda === 'USD' ? '$' : 'RD$';
+
+      const totalDia = citas
+        .filter(c => c.estado !== 'cancelada')
+        .reduce((acc, c) => acc + (c.servicios || []).reduce((a, s) => a + (s.precio || 0), 0), 0);
+      document.getElementById('total-ingresos-dia').innerText = `Total Reservas: ${simbolo}${totalDia.toLocaleString()}`;
+
+      if (citas.length === 0) {
+        cont.innerHTML = '<p style="color:var(--text-muted); padding: 20px; text-align: center;">No hay citas registradas todavía.</p>';
+        return;
+      }
+
+      const barberos = DB.getBarberos(negocioActual.id);
+      cont.innerHTML = citas.map(c => {
+        const b = barberos.find(x => x.id === c.barberoId);
+        const stClass = c.estado === 'confirmada' ? 'badge-blue' : (c.estado === 'completada' ? 'badge-green' : 'badge-muted');
+        return `
+          <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; margin: 0; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <div style="font-weight: 800; font-size: 1rem;">${c.clienteNombre} · 📞 <a href="tel:${c.clienteTelefono}" style="color:var(--accent-gold);">${c.clienteTelefono}</a></div>
+              <div style="font-size: 0.85rem; color: var(--text-muted);">
+                💈 ${b?.nombre || 'Barbero'} · 📅 ${c.fechaLocal} a las <b>${c.horaInicioLocal}</b>
+              </div>
+              <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px;">
+                ${(c.servicios || []).map(s => s.nombre).join(', ')}
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span class="badge ${stClass}">${c.estado}</span>
+              <button class="btn btn-ghost btn-sm btn-del-cita" data-id="${c.id}" style="color: var(--accent-red);">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      cont.querySelectorAll('.btn-del-cita').forEach(b => {
+        b.addEventListener('click', () => {
+          if (confirm('¿Eliminar esta cita?')) {
+            DB.eliminarCita(b.dataset.id);
+            showToast('Cita eliminada', 'info');
+            renderCitas();
+          }
+        });
+      });
+    }
+
+    // 4. DIRECTORIO DE CLIENTES
+    function renderClientes(filtro = '') {
+      const clientes = DB.getClientes(negocioActual.id);
+      const badge = document.getElementById('badge-total-clientes');
+      const cont = document.getElementById('lista-clientes-dueno');
+
+      const filtrados = filtro
+        ? clientes.filter(c => c.nombre.toLowerCase().includes(filtro) || (c.telefono && c.telefono.includes(filtro)))
+        : clientes;
+
+      if (badge) badge.innerText = `${filtrados.length} cliente(s)`;
+
+      if (filtrados.length === 0) {
+        cont.innerHTML = '<p style="color:var(--text-muted); padding: 20px; text-align: center;">No hay clientes registrados que coincidan.</p>';
+        return;
+      }
+
+      cont.innerHTML = filtrados.map(c => `
+        <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; margin: 0; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-weight: 800; font-size: 0.95rem;">${c.nombre}</div>
+            <div style="font-size: 0.82rem; color: var(--text-muted);">
+              📞 <a href="tel:${c.telefono}" style="color: var(--accent-gold); font-weight: 700;">${c.telefono || 'Sin teléfono'}</a> · Visitas: <b>${c.totalVisitas || 1}</b>
+            </div>
+          </div>
+          <span style="font-size: 0.8rem; color: var(--text-secondary);">Última: ${c.ultimaVisita || 'Hoy'}</span>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('inp-buscar-clientes')?.addEventListener('input', (e) => {
+      renderClientes(e.target.value.trim().toLowerCase());
+    });
+
+    // 5. ESTADÍSTICAS DEL LOCAL
+    function renderStatsNegocio() {
+      const citas = DB.getCitas(negocioActual.id);
+      const completadas = citas.filter(c => c.estado === 'completada').length;
+      const totalIngresos = citas
+        .filter(c => c.estado !== 'cancelada')
+        .reduce((acc, c) => acc + (c.servicios || []).reduce((a, s) => a + (s.precio || 0), 0), 0);
+      const simbolo = negocioActual.moneda === 'USD' ? '$' : 'RD$';
+
+      document.getElementById('biz-stat-citas').innerText = citas.length;
+      document.getElementById('biz-stat-ingresos').innerText = `${simbolo}${totalIngresos.toLocaleString()}`;
+      document.getElementById('biz-stat-completadas').innerText = completadas;
+    }
+
+    // MODAL REUTILIZABLE DE QR
+    function mostrarModalQR(url, titulo = 'Código QR', nombreArchivo = 'qr.png') {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="text-align: center; max-width: 420px;">
+          <div class="modal-header">
+            <h3 class="modal-title">${titulo}</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <canvas id="qr-modal-canvas" style="border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin: 0 auto; display: block;"></canvas>
+            <p style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 14px; word-break: break-all;">
+              <code style="color: var(--accent-gold);">${url}</code>
+            </p>
+          </div>
+          <div class="modal-footer" style="display: flex; gap: 8px; justify-content: center;">
+            <button id="btn-copiar-qr-url" class="btn btn-outline btn-sm">📋 Copiar Enlace</button>
+            <button id="btn-descargar-qr-png" class="btn btn-primary btn-sm">💾 Descargar QR (PNG)</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const canvas = modal.querySelector('#qr-modal-canvas');
+      renderizarQR(canvas, url, { size: 240 });
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#btn-copiar-qr-url')?.addEventListener('click', () => {
+        navigator.clipboard?.writeText(url).then(() => showToast('Enlace copiado al portapapeles', 'success'));
+      });
+
+      modal.querySelector('#btn-descargar-qr-png')?.addEventListener('click', () => {
+        descargarQR(canvas, nombreArchivo);
+        showToast('Código QR descargado', 'success');
+      });
+    }
+
+    // QR DEL LOCAL DE LA BARBERÍA
+    document.getElementById('btn-qr-portal')?.addEventListener('click', () => {
+      const url = `${window.location.origin}/cliente.html?b=${negocioActual.slug}`;
+      mostrarModalQR(url, `📱 Código QR de ${negocioActual.nombre}`, `${negocioActual.slug}-qr-local.png`);
+    });
+
+    document.getElementById('btn-copiar-portal')?.addEventListener('click', () => {
+      const url = `${window.location.origin}/cliente.html?b=${negocioActual.slug}`;
+      navigator.clipboard?.writeText(url).then(() => showToast('Enlace de la barbería copiado', 'success'));
+    });
+
+    // MODAL EDITAR NEGOCIO POR EL DUEÑO
+    document.getElementById('btn-editar-biz')?.addEventListener('click', () => {
+      const vert = getVerticalActual();
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 480px;">
+          <div class="modal-header">
+            <h3 class="modal-title">✏️ Editar Datos de mi ${vert.nombre}</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-edit-local">
+              <div class="form-group">
+                <label class="form-label">Nombre del Negocio *</label>
+                <input type="text" id="ed-nombre" class="form-input" required value="${negocioActual.nombre}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Teléfono</label>
+                <input type="tel" id="ed-tel" class="form-input" value="${negocioActual.telefono || ''}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Dirección</label>
+                <input type="text" id="ed-dir" class="form-input" value="${negocioActual.direccion || ''}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Logo o Fachada del Negocio (ImgBB)</label>
+                <input type="file" id="ed-logo-file" accept="image/*" class="form-input" style="padding: 6px;">
+                <small id="ed-logo-status" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; display: block;">
+                  Sube tu logo para que tus clientes lo vean en su móvil.
+                </small>
+              </div>
+              <button type="submit" id="btn-save-edit-local" class="btn btn-primary btn-full">Guardar Cambios</button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#form-edit-local')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btnSave = modal.querySelector('#btn-save-edit-local');
+        const fileInp = modal.querySelector('#ed-logo-file');
+        const statusTxt = modal.querySelector('#ed-logo-status');
+
+        let logoUrl = negocioActual.logoUrl;
+
+        if (fileInp?.files?.length > 0) {
+          btnSave.disabled = true;
+          btnSave.innerText = 'Subiendo imagen a ImgBB...';
+          statusTxt.innerText = '⏳ Subiendo imagen...';
+          try {
+            logoUrl = await subirImagenAImgBB(fileInp.files[0]);
+            showToast('Logo subido con éxito', 'success');
+          } catch (err) {
+            console.warn('Error subiendo logo:', err);
+            showToast('No se pudo subir la imagen: ' + err.message, 'warning');
+          }
+        }
+
+        DB.actualizarNegocio(negocioActual.id, {
+          nombre: modal.querySelector('#ed-nombre').value.trim(),
+          telefono: modal.querySelector('#ed-tel').value.trim(),
+          direccion: modal.querySelector('#ed-dir').value.trim(),
+          ...(logoUrl ? { logoUrl } : {})
+        });
+        negocioActual = DB.getNegocio(negocioActual.id);
+        showToast('Datos del negocio actualizados', 'success');
+        cerrar();
+        renderTodo();
+      });
+    });
+
+    window.addEventListener('agendabarber:cloud_status', (e) => {
+      const banner = document.getElementById('banner-firebase-bloqueado');
+      if (banner) {
+        banner.style.display = (e.detail?.estado === 'bloqueado') ? 'block' : 'none';
+      }
+    });
+    if (DB.cloudStatus === 'bloqueado') {
+      const banner = document.getElementById('banner-firebase-bloqueado');
+      if (banner) banner.style.display = 'block';
+    }
+
+    DB.subscribe(() => {
+      if (Auth.getDuenoSession() && negocioActual) {
+        negocioActual = DB.getNegocio(negocioActual.id);
+        renderTodo();
+      }
+    });
+
+    verificarSesion();
+  </script>
+</body>
+</html>

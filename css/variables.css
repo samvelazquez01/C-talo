@@ -1,0 +1,148 @@
+/**
+ * Variables de Estilo y Paleta de Colores de AgendaBarber
+ * Soporta temas Oscuro y Claro con estética moderna y premium de barbería.
+ */
+
+:root {
+  /* Tipografía */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Radio de bordes */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transiciones y Sombras */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
+  --shadow-highlight: 0 0 15px rgba(212, 175, 55, 0.25);
+}
+
+/* TEMA OSCURO (Por defecto) */
+[data-theme="dark"] {
+  --bg-page: #0b0f17;
+  --bg-surface: #131b2a;
+  --bg-surface-elevated: #1e293b;
+  --bg-surface-hover: #27354a;
+  --bg-surface-active: #334155;
+
+  --border-subtle: #243042;
+  --border-strong: #3b4d66;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverse: #0b0f17;
+
+  /* Acentos de Barbería (Dorado / Ámbar premium) */
+  --accent-gold: #d4af37;
+  --accent-gold-hover: #e5be49;
+  --accent-gold-light: rgba(212, 175, 55, 0.15);
+
+  --accent-blue: #38bdf8;
+  --accent-green: #22c55e;
+  --accent-green-bg: rgba(34, 197, 94, 0.15);
+  --accent-amber: #f59e0b;
+  --accent-amber-bg: rgba(245, 158, 11, 0.15);
+  --accent-red: #ef4444;
+  --accent-red-bg: rgba(239, 68, 68, 0.15);
+}
+
+/* TEMA CLARO */
+[data-theme="light"] {
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f1f5f9;
+  --bg-surface-hover: #e2e8f0;
+  --bg-surface-active: #cbd5e1;
+
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+
+  --accent-gold: #b38e1b;
+  --accent-gold-hover: #9c7b14;
+  --accent-gold-light: rgba(179, 142, 27, 0.12);
+
+  --accent-blue: #0284c7;
+  --accent-green: #16a34a;
+  --accent-green-bg: rgba(22, 163, 74, 0.12);
+  --accent-amber: #d97706;
+  --accent-amber-bg: rgba(217, 119, 6, 0.12);
+  --accent-red: #dc2626;
+  --accent-red-bg: rgba(220, 38, 38, 0.12);
+}
+
+/* --- VERTICALES TEMÁTICAS DE CÍTALO --- */
+
+/* 1. Barbería (Elegante Dorado y Carbón Clásico) */
+[data-vertical="barberia"] {
+  --accent-gold: #d4af37;
+  --accent-gold-hover: #e5be49;
+  --accent-gold-light: rgba(212, 175, 55, 0.15);
+  --accent-blue: #38bdf8;
+}
+
+/* 2. Salón de Belleza / Peluquería Femenina (Rose Gold & Rosa Chic Femenino) */
+[data-vertical="salon"] {
+  --accent-gold: #f43f5e;
+  --accent-gold-hover: #fb7185;
+  --accent-gold-light: rgba(244, 63, 94, 0.15);
+  --accent-blue: #ec4899;
+  --border-focus: #f43f5e;
+}
+
+[data-vertical="salon"] .badge-gold {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+[data-vertical="salon"] .hero-next-card {
+  border-color: #f43f5e;
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.12) 0%, var(--bg-surface) 100%);
+}
+
+/* 3. Estudio de Tatuajes & Piercing (Brutalist Negro & Carmesí Profundo) */
+[data-vertical="tatuaje"] {
+  --accent-gold: #e11d48;
+  --accent-gold-hover: #f43f5e;
+  --accent-gold-light: rgba(225, 29, 72, 0.16);
+  --accent-blue: #a1a1aa;
+  --bg-body: #09090b;
+  --bg-surface: #121216;
+  --bg-surface-elevated: #18181f;
+  --bg-card: #14141a;
+  --border-focus: #e11d48;
+}
+
+[data-vertical="tatuaje"] .badge-gold {
+  background: rgba(225, 29, 72, 0.18);
+  color: #fb7185;
+  border-color: rgba(225, 29, 72, 0.35);
+}
+
+/* 4. Spa & Centro de Bienestar (Zen Esmeralda & Menta Calmante) */
+[data-vertical="spa"] {
+  --accent-gold: #10b981;
+  --accent-gold-hover: #34d399;
+  --accent-gold-light: rgba(16, 185, 129, 0.15);
+  --accent-blue: #06b6d4;
+  --border-focus: #10b981;
+}
+
+[data-vertical="spa"] .badge-gold {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+}

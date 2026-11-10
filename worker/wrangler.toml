@@ -1,0 +1,12 @@
+name = "agendabarber-worker"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[triggers]
+crons = ["* * * * *"] # Ejecuta cada minuto para recordatorios y resumen
+
+[vars]
+ENVIRONMENT = "production"
+FIREBASE_PROJECT_ID = "barber-4b309"
+TELEGRAM_BOT_TOKEN = "9289341660:AAGliANdEIlXYs4MrVxWxSkXiVmYpWnkPJs"
+IMGBB_API_KEY = "de156003ee6bfd775741f8fa28eefb97"

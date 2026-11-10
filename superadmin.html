@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CÍTALO | Panel del Administrador - Tu cita a un click</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/icon.svg">
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/base.css">
+  <style>
+    .card-kpi-interactive {
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      user-select: none;
+    }
+    .card-kpi-interactive:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+      filter: brightness(1.05);
+    }
+    .card-kpi-interactive:active {
+      transform: translateY(0);
+    }
+    .kpi-cta-hint {
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-top: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.85;
+      text-decoration: underline;
+    }
+    .pill-filter {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+    }
+    .pill-filter.active {
+      background: var(--accent-gold);
+      color: #000;
+      border-color: var(--accent-gold);
+    }
+    .biz-card-expandable {
+      background: var(--bg-surface-elevated);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      padding: 18px 20px;
+      transition: border-color 0.15s ease;
+    }
+    .biz-card-expandable:hover {
+      border-color: var(--border-color);
+    }
+    .badge-sub-activa {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+    }
+    .badge-sub-prorroga {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+    .badge-sub-porvencer {
+      background: rgba(234, 179, 8, 0.15);
+      color: #eab308;
+      border: 1px solid rgba(234, 179, 8, 0.35);
+    }
+    .badge-sub-vencido {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+    .badge-sub-suspendido {
+      background: rgba(225, 29, 72, 0.2);
+      color: #f43f5e;
+      border: 1px solid rgba(225, 29, 72, 0.4);
+    }
+    .badge-sub-cancelado {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+    .amount-preset-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .amount-preset-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .amount-preset-btn.active {
+      background: var(--accent-gold);
+      color: #000;
+      border-color: var(--accent-gold);
+    }
+  </style>
+</head>
+<body>
+  <!-- CONTENEDOR DE LOGIN (SI NO HAY SESIÓN INICIADA) -->
+  <div id="pantalla-login" style="display: none; min-height: 100vh; align-items: center; justify-content: center; padding: 20px;">
+    <div class="card" style="max-width: 420px; width: 100%; padding: 36px 28px; border: 2px solid var(--accent-gold); box-shadow: 0 16px 36px rgba(0,0,0,0.4); text-align: center;">
+      <img id="login-logo-citalo" src="./assets/icons/icon.svg" style="width: 64px; height: 64px; border-radius: 14px; object-fit: cover; margin-bottom: 10px;" alt="CÍTALO">
+      <h2 style="font-size: 1.7rem; font-weight: 900; margin: 0 0 4px; letter-spacing: -0.02em;">CÍTALO</h2>
+      <p style="font-size: 0.9rem; color: var(--accent-gold); font-weight: 700; margin-bottom: 22px;">Tu cita a un click · Panel Administrador</p>
+
+      <form id="form-login-superadmin" style="text-align: left;">
+        <div class="form-group">
+          <label class="form-label">Usuario Administrador</label>
+          <input type="text" id="sa-login-user" class="form-input" required value="admin" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input type="password" id="sa-login-pass" class="form-input" required placeholder="Tu contraseña" autocomplete="current-password">
+        </div>
+        <div id="login-error-msg" style="display: none; color: #ef4444; font-size: 0.85rem; font-weight: 700; margin-bottom: 12px; text-align: center;">
+          Usuario o contraseña incorrectos
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top: 8px;">
+          Ingresar a la Plataforma 🚀
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PANEL PRINCIPAL (SE MUESTRA CUANDO HAY SESIÓN ACTIVA) -->
+  <div id="pantalla-panel" style="display: none;">
+    <!-- NAVBAR AISLADO -->
+    <header class="navbar">
+      <div class="brand" style="display: flex; align-items: center; gap: 10px;">
+        <img id="sa-plataforma-logo" src="./assets/icons/icon.svg" style="width: 34px; height: 34px; border-radius: 8px; object-fit: cover; border: 1.5px solid var(--accent-gold);" alt="CÍTALO">
+        <div>
+          <span class="brand-name" style="font-weight: 900; font-size: 1.25rem;">CÍTALO</span>
+          <span style="font-size: 0.72rem; color: var(--accent-gold); font-weight: 700; display: block; line-height: 1;">Tu cita a un click · Administrador Supremo</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button id="btn-config-logo-sa" class="btn btn-secondary btn-sm" title="Cambiar logo oficial de CÍTALO para toda la app">
+          🖼️ Logo CÍTALO
+        </button>
+        <button id="btn-cambiar-clave-sa" class="btn btn-ghost btn-sm" title="Cambiar mi contraseña">
+          🔑 Cambiar Clave
+        </button>
+        <button id="btn-theme" class="btn btn-ghost btn-icon">🌙</button>
+        <button id="btn-logout-sa" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
+          🚪 Cerrar Sesión
+        </button>
+      </div>
+    </header>
+
+    <main class="app-container" style="max-width: 1140px; padding-top: 24px; padding-bottom: 60px;">
+      <!-- ENCABEZADO Y ACCIÓN RÁPIDA -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+        <div>
+          <h1 style="font-size: 1.85rem; font-weight: 900; letter-spacing: -0.02em; margin: 0 0 4px;">
+            Centro de Control & Facturación SaaS
+          </h1>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0;">
+            Administra tus suscripciones, cobros manuales o en bloque, estados y negocios en un solo lugar.
+          </p>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button id="btn-cobro-rapido-global" class="btn btn-secondary btn-lg" style="border-color: var(--accent-gold); color: var(--accent-gold);">
+            💵 Registrar Cobro / Pago
+          </button>
+          <button id="btn-nuevo-negocio" class="btn btn-primary btn-lg">
+            + Registrar Nuevo Negocio (RD$ 500)
+          </button>
+        </div>
+      </div>
+
+      <!-- ALERTA DE CONFIGURACIÓN FIREBASE (SI ESTÁ BLOQUEADO) -->
+      <div id="banner-firebase-bloqueado" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1.5px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+        <div style="font-weight: 800; color: #f59e0b; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+          <span>⚠️</span> Sincronización en la Nube Bloqueada en Firebase
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0 0;">
+          Tus reglas de Firebase Realtime Database están en <code>.read: false, .write: false</code>. Las citas agendadas desde celulares no se sincronizarán hasta que pongas <code>.read: true, .write: true</code> en las Reglas de Firebase Console.
+        </p>
+      </div>
+
+      <!-- DASHBOARD FINANCIERO Y CONTABLE (TARJETAS INTERACTIVAS CON APERTURA DE MODAL) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px;">
+        <!-- RECAUDACIÓN HISTÓRICA TOTAL -->
+        <div id="card-kpi-total" class="card card-kpi-interactive" style="padding: 18px; margin: 0; border: 2px solid var(--accent-gold); background: rgba(212,175,55,0.06);" title="Haz clic para ver el libro contable y todas las transacciones históricas">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 800; color: var(--accent-gold); text-transform: uppercase;">💰 Recaudación Total</span>
+            <span style="font-size: 0.85rem;">🔍</span>
+          </div>
+          <div id="kpi-total-historico" style="font-size: 2.25rem; font-weight: 900; color: var(--accent-gold); margin-top: 4px;">RD$ 0</div>
+          <span style="font-size: 0.8rem; color: var(--text-secondary);">Todo lo recaudado a la fecha</span>
+          <div class="kpi-cta-hint" style="color: var(--accent-gold);">Abrir auditoría completa ➜</div>
+        </div>
+
+        <!-- RECAUDADO ESTE MES -->
+        <div id="card-kpi-mes" class="card card-kpi-interactive" style="padding: 18px; margin: 0; border: 1.5px solid var(--accent-green); background: rgba(34,197,94,0.05);" title="Haz clic para ver los cobros registrados en este mes">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 800; color: var(--accent-green); text-transform: uppercase;">💵 Recaudado Este Mes</span>
+            <span style="font-size: 0.85rem;">🔍</span>
+          </div>
+          <div id="kpi-recaudado-mes" style="font-size: 2.25rem; font-weight: 900; color: var(--accent-green); margin-top: 4px;">RD$ 0</div>
+          <span style="font-size: 0.8rem; color: var(--text-secondary);">Cobrado en el mes en curso</span>
+          <div class="kpi-cta-hint" style="color: var(--accent-green);">Ver cobros de este mes ➜</div>
+        </div>
+
+        <!-- PROYECCIÓN PRÓXIMO MES -->
+        <div id="card-kpi-proyeccion" class="card card-kpi-interactive" style="padding: 18px; margin: 0; border: 1.5px solid var(--accent-blue); background: rgba(59,130,246,0.05);" title="Haz clic para ver el desglose proyectado de renovaciones">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 800; color: var(--accent-blue); text-transform: uppercase;">📅 Proyección Próximo Mes</span>
+            <span style="font-size: 0.85rem;">🔍</span>
+          </div>
+          <div id="kpi-proyeccion-mes" style="font-size: 2.25rem; font-weight: 900; color: var(--accent-blue); margin-top: 4px;">RD$ 0</div>
+          <span style="font-size: 0.8rem; color: var(--text-secondary);">Por mensualidades activas</span>
+          <div class="kpi-cta-hint" style="color: var(--accent-blue);">Ver profesionales a cobrar ➜</div>
+        </div>
+
+        <!-- PENDIENTE POR COBRAR -->
+        <div id="card-kpi-pendiente" class="card card-kpi-interactive" style="padding: 18px; margin: 0; border: 1.5px solid #f59e0b; background: rgba(245,158,11,0.05);" title="Haz clic para ver morosos, vencidos y cobrar directamente por WhatsApp">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; font-weight: 800; color: #f59e0b; text-transform: uppercase;">⏳ Por Cobrar Este Mes</span>
+            <span style="font-size: 0.85rem;">⚡</span>
+          </div>
+          <div id="kpi-pendiente-mes" style="font-size: 2.25rem; font-weight: 900; color: #f59e0b; margin-top: 4px;">RD$ 0</div>
+          <span id="kpi-sub-pendiente" style="font-size: 0.8rem; color: var(--text-secondary);">0 profesionales pendientes</span>
+          <div class="kpi-cta-hint" style="color: #f59e0b;">Cobrar y gestionar prórrogas ➜</div>
+        </div>
+      </div>
+
+      <!-- RESUMEN DE ACTIVIDAD POR VERTICAL -->
+      <div class="card" style="padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+          <div>
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Negocios Registrados:</span>
+            <span id="txt-total-negocios" style="font-size: 1.2rem; font-weight: 900; margin-left: 6px; color: var(--text-primary);">0</span>
+          </div>
+          <div>
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Profesionales Totales:</span>
+            <span id="txt-total-personal" style="font-size: 1.2rem; font-weight: 900; margin-left: 6px; color: var(--accent-green);">0</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="badges-verticales">
+          <span class="badge badge-gold" id="cnt-barberias">💈 0 Barberías</span>
+          <span class="badge" style="background: rgba(244,63,94,0.15); color: #f43f5e;" id="cnt-salones">💇‍♀️ 0 Salones</span>
+          <span class="badge" style="background: rgba(225,29,72,0.15); color: #e11d48;" id="cnt-tatuajes">🖋️ 0 Tatuajes</span>
+          <span class="badge" style="background: rgba(16,185,129,0.15); color: #10b981;" id="cnt-spas">🌿 0 Spas</span>
+        </div>
+      </div>
+
+      <!-- SECCIÓN DE ALERTAS Y SUSCRIPCIONES PENDIENTES -->
+      <div id="sec-alertas-suscripciones" class="card" style="display: none; border-color: #f59e0b; margin-bottom: 24px;">
+        <div class="card-header" style="border-bottom: 1px solid rgba(245, 158, 11, 0.2); padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 class="card-title" style="color: #f59e0b; display: flex; align-items: center; gap: 8px;">
+              <span>⚠️</span> Alertas Activas de Cobranza & Suscripciones (RD$ 200/mes)
+            </h3>
+            <p style="font-size: 0.84rem; color: var(--text-secondary); margin: 2px 0 0;">
+              Profesionales vencidos, en prórroga o próximos a vencer. Puedes asentar cobros directos o en bloque.
+            </p>
+          </div>
+          <span id="badge-total-alertas" class="badge" style="background: rgba(245,158,11,0.2); color: #f59e0b; font-weight: 800;">0 Alertas</span>
+        </div>
+        <div id="lista-alertas-barberos" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+          <!-- Dinámico -->
+        </div>
+      </div>
+
+      <!-- PESTAÑAS PRINCIPALES DEL SUPERADMIN: NEGOCIOS vs PROFESIONALES vs LIBRO CONTABLE -->
+      <div class="view-tabs" style="margin-bottom: 20px;">
+        <button class="view-tab-btn active" id="tab-negocios">🏢 Todos los Negocios</button>
+        <button class="view-tab-btn" id="tab-profesionales">👥 Directorio de Profesionales</button>
+        <button class="view-tab-btn" id="tab-contabilidad">📜 Libro Contable & Auditoría</button>
+      </div>
+
+      <!-- VISTA 1: LISTA DE NEGOCIOS -->
+      <section id="sec-view-negocios">
+        <div class="card">
+          <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h3 class="card-title">🏢 Directorio General de Negocios</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0;">
+                Administra cada local, cancela o activa suscripciones y visualiza su equipo de trabajo.
+              </p>
+            </div>
+            <span id="badge-total-biz" class="badge badge-gold">0 Negocios</span>
+          </div>
+
+          <!-- Filtros de búsqueda para negocios -->
+          <div style="display: flex; gap: 12px; margin-top: 14px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
+            <input type="text" id="inp-buscar-negocio" class="form-input" placeholder="🔍 Buscar por nombre, teléfono o usuario..." style="flex: 1; min-width: 240px; padding: 7px 12px;">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button class="pill-filter active" data-filtro-vert="todos">Todos</button>
+              <button class="pill-filter" data-filtro-vert="barberia">💈 Barberías</button>
+              <button class="pill-filter" data-filtro-vert="salon">💇‍♀️ Salones</button>
+              <button class="pill-filter" data-filtro-vert="tatuaje">🖋️ Tatuajes</button>
+              <button class="pill-filter" data-filtro-vert="spa">🌿 Spas</button>
+            </div>
+          </div>
+
+          <div id="lista-barberias" style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- Dinámico -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VISTA 2: DIRECTORIO GLOBAL DE PROFESIONALES -->
+      <section id="sec-view-profesionales" style="display: none;">
+        <div class="card">
+          <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h3 class="card-title">👥 Directorio Global de Profesionales</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0;">
+                Control individual de cada barbero, estilista, tatuador y terapeuta registrado.
+              </p>
+            </div>
+            <span id="badge-total-profs-tab" class="badge badge-gold">0 Profesionales</span>
+          </div>
+
+          <!-- Filtros de profesionales -->
+          <div style="display: flex; gap: 12px; margin-top: 14px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;">
+            <input type="text" id="inp-buscar-profesional" class="form-input" placeholder="🔍 Buscar barbero por nombre, negocio o teléfono..." style="flex: 1; min-width: 240px; padding: 7px 12px;">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button class="pill-filter active" data-filtro-est-prof="todos">Todos</button>
+              <button class="pill-filter" data-filtro-est-prof="al_dia">🟢 Al Día</button>
+              <button class="pill-filter" data-filtro-est-prof="morosos">⚠️ Con Cobro Pendiente</button>
+              <button class="pill-filter" data-filtro-est-prof="suspendidos">⛔ Suspendidos / Cancelados</button>
+            </div>
+          </div>
+
+          <div id="lista-directorio-profesionales" style="display: flex; flex-direction: column; gap: 12px;">
+            <!-- Dinámico -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VISTA 3: LIBRO CONTABLE & REPORTES -->
+      <section id="sec-view-contabilidad" style="display: none;">
+        <div class="card">
+          <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h3 class="card-title">📜 Registro Histórico de Cobros e Ingresos</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0;">
+                Auditoría detallada de cada instalación cobrada (RD$ 500) y mensualidad cobrada (RD$ 200 o en bloque).
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button id="btn-descargar-csv-contable" class="btn btn-outline btn-sm" style="color: var(--accent-green); border-color: rgba(34, 197, 94, 0.4);">
+                📥 Descargar CSV / Excel
+              </button>
+              <button id="btn-asentar-cobro-manual" class="btn btn-primary btn-sm">
+                + Asentar Cobro Manual
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtro de transacciones -->
+          <div style="margin-top: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="inp-buscar-libro" class="form-input" placeholder="🔍 Buscar transacción por negocio, concepto o método..." style="flex: 1; min-width: 220px; padding: 6px 12px;">
+          </div>
+
+          <div id="tabla-libro-contable" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Dinámico -->
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { DB, VERTICALES } from './js/db.js';
+    import { Auth } from './js/auth.js';
+    import { ThemeManager, showToast } from './js/state.js';
+    import { subirImagenAImgBB } from './js/utils/image-compressor.js';
+
+    function getWhatsAppLink(telefono, mensaje) {
+      if (!telefono) return '';
+      let clean = String(telefono).replace(/\D/g, '');
+      if (clean.length === 10 && (clean.startsWith('809') || clean.startsWith('829') || clean.startsWith('849'))) {
+        clean = '1' + clean;
+      }
+      return `https://wa.me/${clean}?text=${encodeURIComponent(mensaje || '')}`;
+    }
+
+    ThemeManager.init();
+    document.getElementById('btn-theme')?.addEventListener('click', () => {
+      const nuevo = ThemeManager.toggle();
+      document.getElementById('btn-theme').innerText = nuevo === 'dark' ? '🌙' : '☀️';
+    });
+
+    let filtroVertActual = 'todos';
+    let filtroTextoNegocio = '';
+    let filtroEstProfActual = 'todos';
+    let filtroTextoProf = '';
+    let filtroTextoLibro = '';
+
+    // PESTAÑAS PRINCIPALES
+    const tabNegocios = document.getElementById('tab-negocios');
+    const tabProfesionales = document.getElementById('tab-profesionales');
+    const tabContabilidad = document.getElementById('tab-contabilidad');
+
+    const secNegocios = document.getElementById('sec-view-negocios');
+    const secProfesionales = document.getElementById('sec-view-profesionales');
+    const secContabilidad = document.getElementById('sec-view-contabilidad');
+
+    function switchTab(btnActivo, secActiva) {
+      [tabNegocios, tabProfesionales, tabContabilidad].forEach(t => t?.classList.remove('active'));
+      [secNegocios, secProfesionales, secContabilidad].forEach(s => { if (s) s.style.display = 'none'; });
+
+      btnActivo?.classList.add('active');
+      if (secActiva) secActiva.style.display = 'block';
+
+      if (secActiva === secContabilidad) renderLibroContable();
+      if (secActiva === secProfesionales) renderDirectorioProfesionales();
+    }
+
+    tabNegocios?.addEventListener('click', () => switchTab(tabNegocios, secNegocios));
+    tabProfesionales?.addEventListener('click', () => switchTab(tabProfesionales, secProfesionales));
+    tabContabilidad?.addEventListener('click', () => switchTab(tabContabilidad, secContabilidad));
+
+    // VERIFICACIÓN DE SESIÓN PERSISTENTE
+    function verificarSesion() {
+      const sesion = Auth.getSuperadminSession();
+      const plat = DB.getPlataforma();
+
+      // Actualizar logo CÍTALO en la interfaz
+      if (plat?.logoUrl) {
+        const logoHead = document.getElementById('sa-plataforma-logo');
+        const logoLogin = document.getElementById('login-logo-citalo');
+        if (logoHead) logoHead.src = plat.logoUrl;
+        if (logoLogin) logoLogin.src = plat.logoUrl;
+      }
+
+      if (!sesion) {
+        document.getElementById('pantalla-login').style.display = 'flex';
+        document.getElementById('pantalla-panel').style.display = 'none';
+      } else {
+        document.getElementById('pantalla-login').style.display = 'none';
+        document.getElementById('pantalla-panel').style.display = 'block';
+        cargarDatos();
+      }
+    }
+
+    // LOGIN SUPERADMIN
+    document.getElementById('form-login-superadmin')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const user = document.getElementById('sa-login-user').value.trim();
+      const pass = document.getElementById('sa-login-pass').value.trim();
+      const ok = Auth.loginSuperadmin(user, pass);
+      if (ok) {
+        document.getElementById('login-error-msg').style.display = 'none';
+        showToast('¡Bienvenido al Panel Administrador de CÍTALO!', 'success');
+        verificarSesion();
+      } else {
+        document.getElementById('login-error-msg').style.display = 'block';
+      }
+    });
+
+    // LOGOUT
+    document.getElementById('btn-logout-sa')?.addEventListener('click', () => {
+      if (confirm('¿Deseas cerrar la sesión del Administrador?')) {
+        Auth.logoutSuperadmin();
+        showToast('Sesión cerrada correctamente', 'info');
+        verificarSesion();
+      }
+    });
+
+    // CAMBIAR LOGO OFICIAL DE CÍTALO
+    document.getElementById('btn-config-logo-sa')?.addEventListener('click', () => {
+      abrirModalConfigLogo();
+    });
+
+    function abrirModalConfigLogo() {
+      const plat = DB.getPlataforma();
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 440px; text-align: center;">
+          <div class="modal-header">
+            <h3 class="modal-title">🖼️ Logo Oficial de CÍTALO</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <div style="text-align: center; margin-bottom: 16px;">
+              <img id="prev-citalo-logo" src="${plat.logoUrl || './assets/icons/icon.svg'}" style="width: 80px; height: 80px; border-radius: 16px; object-fit: cover; border: 2px solid var(--accent-gold);" alt="CÍTALO Logo">
+              <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">Este logo se mostrará a todos los clientes y portales de la plataforma.</div>
+            </div>
+
+            <form id="form-logo-citalo">
+              <div class="form-group">
+                <label class="form-label">Subir Nuevo Logo (ImgBB) *</label>
+                <input type="file" id="inp-logo-citalo-file" accept="image/*" class="form-input" required style="padding: 6px;">
+                <small id="txt-subiendo-logo" style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">
+                  Se comprimirá automáticamente y se guardará en tu base de datos Firebase.
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Eslogan Oficial</label>
+                <input type="text" id="inp-eslogan" class="form-input" value="${plat.eslogan || 'Tu cita a un click'}">
+              </div>
+
+              <button type="submit" id="btn-guardar-logo-citalo" class="btn btn-primary btn-full">
+                Subir y Actualizar Logo Global 🚀
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#form-logo-citalo')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fileInp = modal.querySelector('#inp-logo-citalo-file');
+        const eslogan = modal.querySelector('#inp-eslogan').value.trim();
+        const btnSave = modal.querySelector('#btn-guardar-logo-citalo');
+        const txtStatus = modal.querySelector('#txt-subiendo-logo');
+
+        if (!fileInp.files || fileInp.files.length === 0) {
+          showToast('Selecciona una imagen', 'warning');
+          return;
+        }
+
+        btnSave.disabled = true;
+        btnSave.innerText = 'Subiendo a ImgBB...';
+        txtStatus.innerText = '⏳ Subiendo y sincronizando con Firebase...';
+
+        try {
+          const logoUrl = await subirImagenAImgBB(fileInp.files[0]);
+          DB.actualizarPlataforma({ logoUrl, eslogan });
+          showToast('¡Logo oficial de CÍTALO actualizado con éxito!', 'success');
+          cerrar();
+          verificarSesion();
+        } catch (err) {
+          console.warn('Error logo:', err);
+          showToast('Error al subir imagen: ' + err.message, 'error');
+          btnSave.disabled = false;
+          btnSave.innerText = 'Subir y Actualizar Logo Global 🚀';
+        }
+      });
+    }
+
+    // CAMBIAR CONTRASEÑA SUPERADMIN
+    document.getElementById('btn-cambiar-clave-sa')?.addEventListener('click', () => {
+      abrirModalCambiarPassword();
+    });
+
+    function abrirModalCambiarPassword() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 400px;">
+          <div class="modal-header">
+            <h3 class="modal-title">🔑 Cambiar mi Contraseña</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-cambiar-pass">
+              <div class="form-group">
+                <label class="form-label">Nueva Contraseña *</label>
+                <input type="password" id="nueva-pass" class="form-input" required placeholder="Escribe tu nueva clave">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirmar Nueva Contraseña *</label>
+                <input type="password" id="confirmar-pass" class="form-input" required placeholder="Repite la clave">
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">Guardar Nueva Contraseña</button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#form-cambiar-pass')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const p1 = modal.querySelector('#nueva-pass').value;
+        const p2 = modal.querySelector('#confirmar-pass').value;
+        if (p1 !== p2) {
+          showToast('Las contraseñas no coinciden', 'error');
+          return;
+        }
+        if (p1.length < 3) {
+          showToast('La contraseña debe tener al menos 3 caracteres', 'warning');
+          return;
+        }
+        Auth.cambiarPasswordSuperadmin(p1);
+        showToast('Contraseña de administrador actualizada en Firebase', 'success');
+        cerrar();
+      });
+    }
+
+    // ==========================================
+    // MODALES INTERACTIVOS DE LAS TARJETAS KPI
+    // ==========================================
+
+    // 1. MODAL RECAUDACIÓN HISTÓRICA TOTAL
+    document.getElementById('card-kpi-total')?.addEventListener('click', () => {
+      abrirModalDetalleHistorico();
+    });
+
+    function abrirModalDetalleHistorico() {
+      const stats = DB.getStatsPlataforma();
+      const cobros = stats.historialCobros || [];
+      const instCount = cobros.filter(c => c.tipo === 'instalacion').length;
+      const mensCount = cobros.filter(c => c.tipo === 'mensualidad').length;
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 680px;">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">💰 Auditoría Histórica de Recaudación</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0;">
+                Desglose financiero total cobrado desde el primer día en CÍTALO.
+              </p>
+            </div>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; text-align: center;">
+              <div style="background: rgba(212,175,55,0.08); border: 1px solid var(--accent-gold); border-radius: 8px; padding: 12px 8px;">
+                <div style="font-size: 0.75rem; color: var(--accent-gold); font-weight: 800; text-transform: uppercase;">Total Histórico</div>
+                <div style="font-size: 1.35rem; font-weight: 900; color: var(--accent-gold);">RD$ ${stats.recaudacionHistoricaTotalRD.toLocaleString()}</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">${cobros.length} transacciones</div>
+              </div>
+              <div style="background: rgba(59,130,246,0.08); border: 1px solid var(--accent-blue); border-radius: 8px; padding: 12px 8px;">
+                <div style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase;">Instalaciones</div>
+                <div style="font-size: 1.35rem; font-weight: 900; color: var(--accent-blue);">RD$ ${stats.ingresosInstalacionesRD.toLocaleString()}</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">${instCount} locales instalados</div>
+              </div>
+              <div style="background: rgba(34,197,94,0.08); border: 1px solid var(--accent-green); border-radius: 8px; padding: 12px 8px;">
+                <div style="font-size: 0.75rem; color: var(--accent-green); font-weight: 800; text-transform: uppercase;">Mensualidades</div>
+                <div style="font-size: 1.35rem; font-weight: 900; color: var(--accent-green);">RD$ ${stats.ingresosMensualesBarberosRD.toLocaleString()}</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">${mensCount} cuotas cobradas</div>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <h4 style="font-size: 0.95rem; font-weight: 800; margin: 0;">📜 Últimos Movimientos Asentados</h4>
+              <button id="btn-export-historico-modal" class="btn btn-outline btn-sm" style="font-size: 0.78rem;">📥 Exportar CSV</button>
+            </div>
+
+            <div style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+              ${cobros.length === 0 ? '<p style="text-align:center; color:var(--text-muted); padding:20px;">No hay registros aún.</p>' : cobros.map(c => `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: 8px; border-left: 3px solid ${c.tipo === 'instalacion' ? 'var(--accent-blue)' : 'var(--accent-green)'};">
+                  <div>
+                    <div style="font-weight: 800; font-size: 0.9rem;">${c.concepto || 'Cobro registrado'}</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">
+                      Negocio: <b>${c.negocioNombre}</b> · ${new Date(c.fecha).toLocaleString()} · ${c.metodo || 'Efectivo'}
+                    </div>
+                  </div>
+                  <div style="font-weight: 900; font-size: 1.1rem; color: ${c.tipo === 'instalacion' ? 'var(--accent-blue)' : 'var(--accent-green)'};">
+                    +RD$ ${Number(c.monto).toLocaleString()}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary btn-full btn-close-modal-btn">Cerrar Ventana</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.querySelector('.btn-close-modal-btn')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+      modal.querySelector('#btn-export-historico-modal')?.addEventListener('click', descargarLibroContableCSV);
+    }
+
+    // 2. MODAL RECAUDADO ESTE MES
+    document.getElementById('card-kpi-mes')?.addEventListener('click', () => {
+      abrirModalDetalleMes();
+    });
+
+    function abrirModalDetalleMes() {
+      const stats = DB.getStatsPlataforma();
+      const cobrosMes = stats.cobrosMes || [];
+      const mesNombre = new Intl.DateTimeFormat('es-DO', { month: 'long', year: 'numeric' }).format(new Date());
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 620px;">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">💵 Cobros de ${mesNombre.toUpperCase()}</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0;">
+                Dinero efectivamente recaudado en el mes en curso.
+              </p>
+            </div>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div style="background: rgba(34,197,94,0.08); border: 1.5px solid var(--accent-green); border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 16px;">
+              <span style="font-size: 0.82rem; font-weight: 800; color: var(--accent-green); text-transform: uppercase;">Total Ingresado Este Mes</span>
+              <div style="font-size: 2.2rem; font-weight: 900; color: var(--accent-green); margin-top: 4px;">
+                RD$ ${stats.recaudadoMesActualRD.toLocaleString()}
+              </div>
+              <span style="font-size: 0.82rem; color: var(--text-muted);">${cobrosMes.length} pagos registrados en ${mesNombre}</span>
+            </div>
+
+            <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 10px;">📋 Detalle de Pagos Recibidos</h4>
+            <div style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+              ${cobrosMes.length === 0 ? '<p style="text-align:center; color:var(--text-muted); padding:24px;">Aún no hay cobros asentados este mes.</p>' : cobrosMes.map(c => `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: 8px;">
+                  <div>
+                    <div style="font-weight: 800; font-size: 0.9rem;">${c.concepto}</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">${c.negocioNombre} · ${new Date(c.fecha).toLocaleDateString()} · ${c.metodo}</div>
+                  </div>
+                  <div style="font-weight: 900; font-size: 1.15rem; color: var(--accent-green);">
+                    +RD$ ${Number(c.monto).toLocaleString()}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="modal-footer" style="display: flex; gap: 8px;">
+            <button id="btn-modal-mes-asentar" class="btn btn-primary" style="flex: 1;">+ Asentar Cobro de Este Mes</button>
+            <button class="btn btn-secondary btn-close-modal-btn">Cerrar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.querySelector('.btn-close-modal-btn')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+      modal.querySelector('#btn-modal-mes-asentar')?.addEventListener('click', () => {
+        cerrar();
+        abrirModalCobroRapido();
+      });
+    }
+
+    // 3. MODAL PROYECCIÓN PRÓXIMO MES
+    document.getElementById('card-kpi-proyeccion')?.addEventListener('click', () => {
+      abrirModalDetalleProyeccion();
+    });
+
+    function abrirModalDetalleProyeccion() {
+      const stats = DB.getStatsPlataforma();
+      const proy = stats.proyeccionDetallada || [];
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 640px;">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">📅 Proyección de Ingresos Próximo Mes</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0;">
+                Monto recurrente estimado según los profesionales con suscripción activa (RD$ 200/mes c/u).
+              </p>
+            </div>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div style="background: rgba(59,130,246,0.08); border: 1.5px solid var(--accent-blue); border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 16px;">
+              <span style="font-size: 0.82rem; font-weight: 800; color: var(--accent-blue); text-transform: uppercase;">Ingreso Mensual Garantizado</span>
+              <div style="font-size: 2.2rem; font-weight: 900; color: var(--accent-blue); margin-top: 4px;">
+                RD$ ${stats.proyeccionProximoMesRD.toLocaleString()}
+              </div>
+              <span style="font-size: 0.82rem; color: var(--text-muted);">${proy.length} profesionales activos al día</span>
+            </div>
+
+            <h4 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 10px;">👥 Lista de Renovaciones Programadas</h4>
+            <div style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+              ${proy.length === 0 ? '<p style="text-align:center; color:var(--text-muted); padding:20px;">No hay profesionales activos al día para proyectar.</p>' : proy.map(p => `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface-elevated); padding: 10px 14px; border-radius: 8px;">
+                  <div>
+                    <div style="font-weight: 800; font-size: 0.92rem;">${p.barberoNombre}</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">
+                      Negocio: <b>${p.negocioNombre}</b> · Próximo vencimiento: <b style="color:var(--accent-blue);">${p.proximoVencimiento}</b>
+                    </div>
+                  </div>
+                  <div style="font-weight: 900; font-size: 1.1rem; color: var(--accent-blue);">
+                    RD$ 200
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary btn-full btn-close-modal-btn">Cerrar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.querySelector('.btn-close-modal-btn')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+    }
+
+    // 4. MODAL PENDIENTES POR COBRAR
+    document.getElementById('card-kpi-pendiente')?.addEventListener('click', () => {
+      abrirModalDetallePendientes();
+    });
+
+    function abrirModalDetallePendientes() {
+      const stats = DB.getStatsPlataforma();
+      const alertas = stats.alertas || [];
+      const negocios = DB.getNegocios();
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 680px;">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title" style="color: #f59e0b;">⏳ Cuentas Pendientes por Cobrar</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0;">
+                Monto pendiente: <b>RD$ ${stats.montoPendienteMesActualRD.toLocaleString()}</b>. Cobra por WhatsApp o asienta el pago directo.
+              </p>
+            </div>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div style="max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+              ${alertas.length === 0 ? '<p style="text-align:center; color:var(--text-muted); padding:30px;">🎉 ¡Excelente! No tienes ningún profesional pendiente de pago ni vencido.</p>' : alertas.map(b => {
+                const neg = negocios.find(n => n.id === b.negocioId);
+                const susc = b.suscripcion || {};
+                const waLink = getWhatsAppLink(b.telefono, `Hola ${b.nombre}, te saludo de la administración de CÍTALO. Te recordamos tu mensualidad de suscripción de RD$ 200 pendiente.`);
+
+                return `
+                  <div style="background: var(--bg-surface-elevated); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <div>
+                      <div style="font-weight: 800; font-size: 0.95rem;">
+                        ${b.nombre} · <span style="color: var(--accent-gold); font-size: 0.85rem;">${neg?.nombre || 'Negocio'}</span>
+                      </div>
+                      <div style="font-size: 0.8rem; color: var(--text-muted);">
+                        Tel: ${b.telefono || 'Sin tel'} · Vencimiento: <b>${susc.proximoVencimiento || 'N/A'}</b> · Estado: <b>${susc.estadoPago}</b>
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                      ${waLink ? `
+                        <a href="${waLink}" target="_blank" class="btn btn-outline btn-sm" style="color: #25D366; border-color: rgba(37,211,102,0.4);">
+                          💬 WhatsApp
+                        </a>
+                      ` : ''}
+                      <button class="btn btn-primary btn-sm btn-modal-cobrar-indiv" data-barbero="${b.id}" data-negocio="${b.negocioId}">
+                        💵 Cobrar Pago
+                      </button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary btn-full btn-close-modal-btn">Cerrar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.querySelector('.btn-close-modal-btn')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelectorAll('.btn-modal-cobrar-indiv').forEach(btn => {
+        btn.addEventListener('click', () => {
+          cerrar();
+          abrirModalCobroRapido(btn.dataset.negocio, btn.dataset.barbero);
+        });
+      });
+    }
+
+    // ========================================================
+    // MODAL DE GESTIÓN INTEGRAL DE SUSCRIPCIÓN PARA UN NEGOCIO
+    // Permite cancelar suscripción, reactivar, suspender,
+    // y registrar pagos personalizados / en bloque (ej. RD$ 1,000)
+    // ========================================================
+    function abrirModalGestionSuscripcion(negocioId) {
+      const n = DB.getNegocio(negocioId);
+      if (!n) return;
+      const vert = VERTICALES[n.tipoNegocio || 'barberia'] || VERTICALES.barberia;
+      const barberosBiz = DB.getBarberos(n.id);
+      const suscBiz = n.suscripcion || { estado: 'activa', costoInstalacionRD: 500 };
+      const estadoActual = suscBiz.estado || (n.activo ? 'activa' : 'suspendida');
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 650px;">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">💳 Gestión de Suscripción: ${n.nombre}</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0;">
+                ${vert.icono} ${vert.nombre} · Control total de cobros, cancelaciones y renovaciones.
+              </p>
+            </div>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <!-- ESTADO ACTUAL Y ACCIONES DIRECTAS -->
+            <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Estado de la Suscripción:</span>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                    <span class="badge ${estadoActual === 'activa' ? 'badge-sub-activa' : (estadoActual === 'cancelada' ? 'badge-sub-cancelado' : 'badge-sub-suspendido')}" style="font-size: 0.95rem; padding: 4px 12px;">
+                      ${estadoActual === 'activa' ? '🟢 Suscripción Activa' : (estadoActual === 'cancelada' ? '🚫 Suscripción Cancelada' : '⛔ Suspendida por Pago')}
+                    </span>
+                    <span style="font-size: 0.82rem; color: var(--text-muted);">(${barberosBiz.length} profesionales)</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  ${estadoActual !== 'activa' ? `
+                    <button id="btn-reactivar-susc-biz" class="btn btn-primary btn-sm">
+                      ✅ Reactivar Negocio
+                    </button>
+                  ` : `
+                    <button id="btn-suspender-susc-biz" class="btn btn-secondary btn-sm" style="color: #f59e0b;">
+                      ⛔ Suspender
+                    </button>
+                    <button id="btn-cancelar-susc-biz" class="btn btn-outline btn-sm" style="color: var(--accent-red); border-color: rgba(239, 68, 68, 0.4);">
+                      🚫 Cancelar Suscripción
+                    </button>
+                  `}
+                </div>
+              </div>
+            </div>
+
+            <!-- FORMULARIO DE REGISTRO DE PAGO (INDIVIDUAL O EN BLOQUE) -->
+            <div style="background: var(--bg-card); border: 1.5px solid var(--accent-gold); border-radius: 12px; padding: 16px; margin-bottom: 18px;">
+              <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--accent-gold); margin-bottom: 4px;">
+                💵 Registrar Pago (Individual o Conjunto)
+              </h4>
+              <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
+                Si el dueño te pagó RD$ 1,000 o cualquier monto por varios meses juntos, regístralo aquí.
+              </p>
+
+              <form id="form-pago-suscripcion-biz">
+                <div class="form-group">
+                  <label class="form-label">¿A quién se aplica el cobro? *</label>
+                  <select id="pago-target-prof" class="form-select" required>
+                    <option value="">🏢 Todo el Negocio (Pago conjunto / Instalación)</option>
+                    ${barberosBiz.map(b => `<option value="${b.id}">👤 ${b.nombre} (${vert.personalSingular})</option>`).join('')}
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Monto Cobrado (RD$) *</label>
+                  <input type="number" id="pago-monto" class="form-input" required min="1" value="1000" style="font-size: 1.2rem; font-weight: 800; color: var(--accent-gold);">
+                  <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                    <button type="button" class="amount-preset-btn" data-val="200" data-meses="1">RD$ 200 (1m)</button>
+                    <button type="button" class="amount-preset-btn" data-val="500" data-meses="1">RD$ 500 (Instalación)</button>
+                    <button type="button" class="amount-preset-btn" data-val="600" data-meses="3">RD$ 600 (3m)</button>
+                    <button type="button" class="amount-preset-btn active" data-val="1000" data-meses="5">RD$ 1,000 (5m)</button>
+                    <button type="button" class="amount-preset-btn" data-val="1200" data-meses="6">RD$ 1,200 (6m)</button>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Meses que cubre *</label>
+                    <input type="number" id="pago-meses" class="form-input" min="1" max="36" value="5" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Método de Pago *</label>
+                    <select id="pago-metodo" class="form-select">
+                      <option value="Transferencia Banco Popular">Transferencia Banco Popular</option>
+                      <option value="Transferencia Banreservas">Transferencia Banreservas</option>
+                      <option value="Transferencia BHD">Transferencia BHD</option>
+                      <option value="Efectivo en mano">Efectivo en mano</option>
+                      <option value="Tarjeta / Pasarela">Tarjeta / Pasarela</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Concepto o Nota</label>
+                  <input type="text" id="pago-concepto" class="form-input" placeholder="Ej: Adelanto de 5 meses de Juan Barbero">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top: 6px;">
+                  💰 Guardar Cobro y Renovar Suscripción
+                </button>
+              </form>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary btn-full btn-close-modal-btn">Listo / Cerrar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => {
+        modal.remove();
+        cargarDatos();
+      };
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.querySelector('.btn-close-modal-btn')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      // Presets de monto
+      modal.querySelectorAll('.amount-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          modal.querySelectorAll('.amount-preset-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          modal.querySelector('#pago-monto').value = btn.dataset.val;
+          modal.querySelector('#pago-meses').value = btn.dataset.meses;
+        });
+      });
+
+      // Reactivar negocio
+      modal.querySelector('#btn-reactivar-susc-biz')?.addEventListener('click', () => {
+        DB.cambiarEstadoSuscripcionNegocio(n.id, 'activa');
+        showToast('Negocio reactivado exitosamente', 'success');
+        cerrar();
+      });
+
+      // Suspender negocio
+      modal.querySelector('#btn-suspender-susc-biz')?.addEventListener('click', () => {
+        if (confirm('¿Suspender este negocio por falta de pago? Las reservas web quedarán bloqueadas.')) {
+          DB.cambiarEstadoSuscripcionNegocio(n.id, 'suspendida');
+          showToast('Negocio suspendido', 'warning');
+          cerrar();
+        }
+      });
+
+      // Cancelar suscripción
+      modal.querySelector('#btn-cancelar-susc-biz')?.addEventListener('click', () => {
+        if (confirm('¿CANCELAR la suscripción de este negocio? No se borrarán los datos, pero dejará de operar.')) {
+          DB.cambiarEstadoSuscripcionNegocio(n.id, 'cancelada');
+          showToast('Suscripción cancelada', 'info');
+          cerrar();
+        }
+      });
+
+      // Enviar formulario de pago
+      modal.querySelector('#form-pago-suscripcion-biz')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const personalId = modal.querySelector('#pago-target-prof').value || null;
+        const monto = Number(modal.querySelector('#pago-monto').value);
+        const meses = Number(modal.querySelector('#pago-meses').value) || 1;
+        const metodo = modal.querySelector('#pago-metodo').value;
+        const concepto = modal.querySelector('#pago-concepto').value.trim();
+
+        DB.registrarPagoPersonalizado({
+          negocioId: n.id,
+          personalId,
+          monto,
+          meses,
+          metodo,
+          concepto
+        });
+
+        showToast(`¡Pago de RD$ ${monto.toLocaleString()} registrado con éxito! Suscripción renovada por ${meses} mes(es).`, 'success');
+        cerrar();
+      });
+    }
+
+    // MODAL DE COBRO RÁPIDO GLOBAL
+    document.getElementById('btn-cobro-rapido-global')?.addEventListener('click', () => {
+      abrirModalCobroRapido();
+    });
+
+    function abrirModalCobroRapido(negocioIdInicial = null, barberoIdInicial = null) {
+      const negocios = DB.getNegocios();
+      const todosBarberos = DB.getBarberos();
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 520px;">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">💵 Registrar Cobro o Pago</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 2px 0 0;">
+                Asienta pagos individuales, adelantados o en bloque en el libro contable.
+              </p>
+            </div>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-cobro-rapido-global">
+              <div class="form-group">
+                <label class="form-label">Selecciona el Negocio *</label>
+                <select id="cr-negocio" class="form-select" required>
+                  <option value="">-- Elige un negocio --</option>
+                  ${negocios.map(n => `<option value="${n.id}" ${n.id === negocioIdInicial ? 'selected' : ''}>${n.nombre}</option>`).join('')}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Profesional / Barbero (Opcional)</label>
+                <select id="cr-profesional" class="form-select">
+                  <option value="">(Pago general del local / instalación)</option>
+                  ${todosBarberos.map(b => `<option value="${b.id}" data-neg="${b.negocioId}" ${b.id === barberoIdInicial ? 'selected' : ''}>${b.nombre}</option>`).join('')}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Monto a Cobrar (RD$) *</label>
+                <input type="number" id="cr-monto" class="form-input" required min="1" value="200" style="font-size: 1.25rem; font-weight: 800; color: var(--accent-gold);">
+                <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                  <button type="button" class="amount-preset-btn active" data-val="200" data-meses="1">RD$ 200 (1m)</button>
+                  <button type="button" class="amount-preset-btn" data-val="400" data-meses="2">RD$ 400 (2m)</button>
+                  <button type="button" class="amount-preset-btn" data-val="600" data-meses="3">RD$ 600 (3m)</button>
+                  <button type="button" class="amount-preset-btn" data-val="1000" data-meses="5">RD$ 1,000 (5m)</button>
+                  <button type="button" class="amount-preset-btn" data-val="1200" data-meses="6">RD$ 1,200 (6m)</button>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Meses que cubre</label>
+                  <input type="number" id="cr-meses" class="form-input" min="1" value="1">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Método de Pago</label>
+                  <select id="cr-metodo" class="form-select">
+                    <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                    <option value="Efectivo en mano">Efectivo en mano</option>
+                    <option value="Tarjeta / Pasarela">Tarjeta / Pasarela</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Concepto</label>
+                <input type="text" id="cr-concepto" class="form-input" placeholder="Ej: Mensualidad de noviembre">
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top: 8px;">
+                💰 Asentar Cobro en Firme
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => {
+        modal.remove();
+        cargarDatos();
+      };
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      // Presets
+      modal.querySelectorAll('.amount-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          modal.querySelectorAll('.amount-preset-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          modal.querySelector('#cr-monto').value = btn.dataset.val;
+          modal.querySelector('#cr-meses').value = btn.dataset.meses;
+        });
+      });
+
+      modal.querySelector('#form-cobro-rapido-global')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const negId = modal.querySelector('#cr-negocio').value;
+        const profId = modal.querySelector('#cr-profesional').value || null;
+        const monto = Number(modal.querySelector('#cr-monto').value);
+        const meses = Number(modal.querySelector('#cr-meses').value) || 1;
+        const metodo = modal.querySelector('#cr-metodo').value;
+        const concepto = modal.querySelector('#cr-concepto').value.trim();
+
+        if (!negId) {
+          showToast('Selecciona un negocio', 'warning');
+          return;
+        }
+
+        DB.registrarPagoPersonalizado({
+          negocioId: negId,
+          personalId: profId,
+          monto,
+          meses,
+          metodo,
+          concepto
+        });
+
+        showToast(`Pago de RD$ ${monto.toLocaleString()} registrado con éxito.`, 'success');
+        cerrar();
+      });
+    }
+
+    // ==========================================
+    // CARGAR DATOS Y RENDERIZAR VISTAS
+    // ==========================================
+    function cargarDatos() {
+      const stats = DB.getStatsPlataforma();
+      const negocios = DB.getNegocios();
+      const barberos = DB.getBarberos();
+
+      // Métricas financieras principales
+      document.getElementById('kpi-total-historico').innerText = `RD$ ${stats.recaudacionHistoricaTotalRD.toLocaleString()}`;
+      document.getElementById('kpi-recaudado-mes').innerText = `RD$ ${stats.recaudadoMesActualRD.toLocaleString()}`;
+      document.getElementById('kpi-proyeccion-mes').innerText = `RD$ ${stats.proyeccionProximoMesRD.toLocaleString()}`;
+      document.getElementById('kpi-pendiente-mes').innerText = `RD$ ${stats.montoPendienteMesActualRD.toLocaleString()}`;
+      document.getElementById('kpi-sub-pendiente').innerText = `${stats.alertas.filter(a => a.suscripcion?.estadoPago !== 'suspendido' && a.suscripcion?.estadoPago !== 'cancelado').length} profesionales por cobrar`;
+
+      // Actividad general
+      document.getElementById('txt-total-negocios').innerText = stats.totalNegocios;
+      document.getElementById('txt-total-personal').innerText = `${stats.personalAlDia} al día / ${stats.totalPersonal} total`;
+      document.getElementById('badge-total-biz').innerText = `${negocios.length} Negocio(s)`;
+      const badgeProfsTab = document.getElementById('badge-total-profs-tab');
+      if (badgeProfsTab) badgeProfsTab.innerText = `${barberos.length} Profesionales`;
+
+      // Desglose por verticales
+      document.getElementById('cnt-barberias').innerText = `💈 ${stats.porVertical.barberia} Barberías`;
+      document.getElementById('cnt-salones').innerText = `💇‍♀️ ${stats.porVertical.salon} Salones`;
+      document.getElementById('cnt-tatuajes').innerText = `🖋️ ${stats.porVertical.tatuaje} Tatuajes`;
+      document.getElementById('cnt-spas').innerText = `🌿 ${stats.porVertical.spa} Spas`;
+
+      // Alertas de suscripción en banner
+      const secAlertas = document.getElementById('sec-alertas-suscripciones');
+      const contAlertas = document.getElementById('lista-alertas-barberos');
+      if (stats.alertas.length > 0) {
+        secAlertas.style.display = 'block';
+        document.getElementById('badge-total-alertas').innerText = `${stats.alertas.length} Pendiente(s)`;
+        contAlertas.innerHTML = stats.alertas.map(b => {
+          const neg = negocios.find(n => n.id === b.negocioId);
+          const vert = VERTICALES[neg?.tipoNegocio || 'barberia'] || VERTICALES.barberia;
+          const susc = b.suscripcion || {};
+          const est = susc.estadoPago;
+
+          let badgeColor = 'badge-muted';
+          let estadoTexto = 'Pendiente';
+          if (est === 'por_vencer') {
+            badgeColor = 'badge-sub-porvencer';
+            estadoTexto = '🟡 Por vencer pronto';
+          } else if (est === 'prorroga') {
+            badgeColor = 'badge-sub-prorroga';
+            estadoTexto = `🟠 En prórroga (${susc.prorrogaHasta || ''})`;
+          } else if (est === 'vencido') {
+            badgeColor = 'badge-sub-vencido';
+            estadoTexto = '🔴 Pago Vencido';
+          } else if (est === 'suspendido') {
+            badgeColor = 'badge-sub-suspendido';
+            estadoTexto = '⛔ Agenda Suspendida';
+          } else if (est === 'cancelado') {
+            badgeColor = 'badge-sub-cancelado';
+            estadoTexto = '🚫 Suscripción Cancelada';
+          }
+
+          const waLink = getWhatsAppLink(b.telefono, `Hola ${b.nombre}, te saludo de CÍTALO. Te recordamos tu mensualidad de RD$ 200 pendiente.`);
+
+          return `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface-elevated); padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 10px;">
+              <div>
+                <div style="font-weight: 800; font-size: 0.95rem;">
+                  ${vert.icono} ${b.nombre} (${vert.personalSingular}) · <span style="color: var(--accent-gold); font-size: 0.88rem;">${neg?.nombre || 'Negocio'}</span>
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-muted);">
+                  Tel: ${b.telefono || 'Sin tel'} · Vencimiento: <b>${susc.proximoVencimiento || 'N/A'}</b> · Mensualidad: <b>RD$ 200</b>
+                </div>
+                <span class="badge ${badgeColor}" style="margin-top: 4px;">${estadoTexto}</span>
+              </div>
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                ${waLink ? `
+                  <a href="${waLink}" target="_blank" class="btn btn-outline btn-sm" style="color: #25D366; border-color: rgba(37,211,102,0.4);" title="Chatear por WhatsApp">
+                    💬 WhatsApp
+                  </a>
+                ` : ''}
+                <button class="btn btn-primary btn-sm btn-cobrar-mes-directo" data-barbero="${b.id}" data-negocio="${b.negocioId}">
+                  💵 Cobrar / Registrar Pago
+                </button>
+                <button class="btn btn-secondary btn-sm btn-dar-prorroga-directo" data-barbero="${b.id}">
+                  ⏳ Prórroga (3d)
+                </button>
+                <button class="btn btn-outline btn-sm btn-suspender-barbero-directo" data-barbero="${b.id}" style="${est === 'suspendido' ? 'color: var(--accent-green);' : 'color: var(--accent-red);'}">
+                  ${est === 'suspendido' ? '✅ Reactivar' : '⛔ Suspender'}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        contAlertas.querySelectorAll('.btn-cobrar-mes-directo').forEach(b => {
+          b.addEventListener('click', () => {
+            abrirModalCobroRapido(b.dataset.negocio, b.dataset.barbero);
+          });
+        });
+
+        contAlertas.querySelectorAll('.btn-dar-prorroga-directo').forEach(b => {
+          b.addEventListener('click', () => {
+            DB.darProrrogaBarbero(b.dataset.barbero, 3);
+            showToast('Prórroga de 3 días otorgada', 'info');
+            cargarDatos();
+          });
+        });
+
+        contAlertas.querySelectorAll('.btn-suspender-barbero-directo').forEach(b => {
+          b.addEventListener('click', () => {
+            const nuevoEst = DB.toggleSuspensionBarbero(b.dataset.barbero);
+            showToast(nuevoEst === 'suspendido' ? 'Profesional suspendido' : 'Profesional reactivado', 'info');
+            cargarDatos();
+          });
+        });
+      } else {
+        secAlertas.style.display = 'none';
+      }
+
+      // Render Directorio de Negocios
+      renderDirectorioNegocios();
+    }
+
+    // RENDER DIRECTORIO DE NEGOCIOS
+    function renderDirectorioNegocios() {
+      const negocios = DB.getNegocios();
+      const barberos = DB.getBarberos();
+      const contenedor = document.getElementById('lista-barberias');
+
+      let listaFiltrada = negocios.filter(n => {
+        if (filtroVertActual !== 'todos' && (n.tipoNegocio || 'barberia') !== filtroVertActual) {
+          return false;
+        }
+        if (filtroTextoNegocio) {
+          const t = filtroTextoNegocio.toLowerCase();
+          const matchNom = (n.nombre || '').toLowerCase().includes(t);
+          const matchTel = (n.telefono || '').toLowerCase().includes(t);
+          const matchUser = (n.cuenta?.usuario || '').toLowerCase().includes(t);
+          if (!matchNom && !matchTel && !matchUser) return false;
+        }
+        return true;
+      });
+
+      if (listaFiltrada.length === 0) {
+        contenedor.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; background: var(--bg-surface-elevated); border-radius: var(--radius-lg);">
+            <span style="font-size: 3rem;">🏢</span>
+            <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 10px;">No se encontraron negocios con este filtro</h3>
+            <p style="color: var(--text-secondary); font-size: 0.92rem; margin: 6px auto 18px; max-width: 480px;">
+              Registra un nuevo negocio o cambia el término de búsqueda.
+            </p>
+            <button id="btn-empty-crear" class="btn btn-primary btn-lg">
+              + Registrar Nuevo Negocio
+            </button>
+          </div>
+        `;
+        document.getElementById('btn-empty-crear')?.addEventListener('click', abrirModalCrear);
+        return;
+      }
+
+      contenedor.innerHTML = listaFiltrada.map(n => {
+        const vert = VERTICALES[n.tipoNegocio || 'barberia'] || VERTICALES.barberia;
+        const personalBiz = barberos.filter(b => b.negocioId === n.id);
+        const cuenta = n.cuenta || { usuario: n.slug, password: '••••' };
+        const susc = n.suscripcion || { estado: 'activa' };
+        const estSusc = susc.estado || (n.activo ? 'activa' : 'suspendida');
+
+        let badgeSubClass = 'badge-sub-activa';
+        let textoSub = '🟢 Suscripción Activa';
+        if (estSusc === 'cancelada') {
+          badgeSubClass = 'badge-sub-cancelado';
+          textoSub = '🚫 Suscripción Cancelada';
+        } else if (estSusc === 'suspendida') {
+          badgeSubClass = 'badge-sub-suspendido';
+          textoSub = '⛔ Suspendida por Pago';
+        }
+
+        return `
+          <div class="biz-card-expandable">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <img src="${n.logoUrl || './assets/icons/icon.svg'}" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover; border: 2px solid ${vert.colorHex};" alt="${n.nombre}">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <h4 style="font-size: 1.25rem; font-weight: 800; margin: 0;">${n.nombre}</h4>
+                    <span class="badge" style="background: rgba(255,255,255,0.08); border: 1px solid ${vert.colorHex}; color: ${vert.colorHex}; font-weight: 700;">
+                      ${vert.icono} ${vert.nombre}
+                    </span>
+                    <span class="badge ${badgeSubClass}">${textoSub}</span>
+                    <span class="badge badge-gold">${n.moneda === 'USD' ? 'USD ($)' : 'RD$ (DOP)'}</span>
+                  </div>
+                  <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px; margin-bottom: 0;">
+                    📍 ${n.direccion || 'Sin dirección'} · 📞 ${n.telefono || 'Sin teléfono'} · Enlace: <code style="color: var(--accent-gold); font-size: 0.85rem;">/cliente.html?b=${n.slug}</code>
+                  </p>
+                  <div style="display: flex; gap: 14px; margin-top: 6px; font-size: 0.82rem; font-weight: 700; flex-wrap: wrap;">
+                    <span style="color: var(--accent-gold);">${vert.icono} ${personalBiz.length} ${vert.personalPlural}</span>
+                    <span style="color: var(--accent-blue);">👤 Usuario: <code>${cuenta.usuario || n.slug}</code></span>
+                    <span style="color: var(--accent-green);">🔑 Clave: <code>${cuenta.password || '1234'}</code></span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <button class="btn btn-primary btn-sm btn-susc-biz" data-id="${n.id}" style="background: var(--accent-gold); color: #000; font-weight: 800;">
+                  💳 Suscripción & Pagos
+                </button>
+                <button class="btn btn-secondary btn-sm btn-edit-biz" data-id="${n.id}">
+                  ✏️ Editar
+                </button>
+                <a href="./dueno.html?biz=${n.slug}" class="btn btn-outline btn-sm" title="Entrar al portal de este dueño">
+                  🏢 Portal Dueño
+                </a>
+                <a href="./cliente.html?b=${n.slug}" target="_blank" class="btn btn-outline btn-sm" title="Ver portal de reserva público">
+                  📱 Ver Portal
+                </a>
+                <button class="btn btn-ghost btn-sm btn-del-biz" data-id="${n.id}" style="color: var(--accent-red);" title="Eliminar negocio definitivamente">
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <!-- ACORDEÓN DE EQUIPO DE TRABAJO -->
+            <div style="margin-top: 14px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.84rem; font-weight: 700; color: var(--text-muted);">
+                  👥 Personal en este negocio (${personalBiz.length})
+                </span>
+                <button class="btn btn-ghost btn-sm btn-toggle-equipo" data-target="equipo-${n.id}" style="font-size: 0.8rem;">
+                  ▼ Mostrar / Ocultar Equipo
+                </button>
+              </div>
+
+              <div id="equipo-${n.id}" style="display: none; margin-top: 10px; display: none; flex-direction: column; gap: 8px;">
+                ${personalBiz.length === 0 ? '<p style="font-size: 0.82rem; color: var(--text-muted); margin: 6px 0;">No hay profesionales registrados aún en este negocio.</p>' : personalBiz.map(b => {
+                  const s = b.suscripcion || {};
+                  return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-body); padding: 8px 12px; border-radius: 6px; font-size: 0.84rem; flex-wrap: wrap; gap: 8px;">
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <span>👤 <b>${b.nombre}</b></span>
+                        <span class="badge ${s.estadoPago === 'al_dia' ? 'badge-sub-activa' : (s.estadoPago === 'suspendido' ? 'badge-sub-suspendido' : 'badge-sub-vencido')}" style="font-size: 0.72rem;">
+                          ${s.estadoPago || 'al_dia'}
+                        </span>
+                        <span style="color: var(--text-muted);">Vence: ${s.proximoVencimiento || 'N/A'}</span>
+                      </div>
+                      <div style="display: flex; gap: 6px;">
+                        <button class="btn btn-secondary btn-sm btn-cobrar-rapido-prof" data-barbero="${b.id}" data-negocio="${n.id}" style="padding: 2px 8px; font-size: 0.76rem;">
+                          💵 Cobrar
+                        </button>
+                        <button class="btn btn-outline btn-sm btn-toggle-susp-prof" data-barbero="${b.id}" style="padding: 2px 8px; font-size: 0.76rem; ${b.activo ? 'color: var(--accent-red);' : 'color: var(--accent-green);'}">
+                          ${b.activo ? '⛔ Suspender' : '✅ Reactivar'}
+                        </button>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Eventos
+      contenedor.querySelectorAll('.btn-susc-biz').forEach(b => {
+        b.addEventListener('click', () => abrirModalGestionSuscripcion(b.dataset.id));
+      });
+
+      contenedor.querySelectorAll('.btn-edit-biz').forEach(b => {
+        b.addEventListener('click', () => abrirModalEditar(b.dataset.id));
+      });
+
+      contenedor.querySelectorAll('.btn-del-biz').forEach(b => {
+        b.addEventListener('click', () => {
+          if (confirm('¿Eliminar este negocio y todos sus datos asociados? Esta acción no se puede deshacer.')) {
+            DB.eliminarNegocio(b.dataset.id);
+            showToast('Negocio eliminado', 'info');
+            cargarDatos();
+          }
+        });
+      });
+
+      contenedor.querySelectorAll('.btn-toggle-equipo').forEach(b => {
+        b.addEventListener('click', () => {
+          const box = document.getElementById(b.dataset.target);
+          if (box) {
+            const visible = box.style.display === 'flex';
+            box.style.display = visible ? 'none' : 'flex';
+            b.innerText = visible ? '▼ Mostrar Equipo' : '▲ Ocultar Equipo';
+          }
+        });
+      });
+
+      contenedor.querySelectorAll('.btn-cobrar-rapido-prof').forEach(b => {
+        b.addEventListener('click', () => abrirModalCobroRapido(b.dataset.negocio, b.dataset.barbero));
+      });
+
+      contenedor.querySelectorAll('.btn-toggle-susp-prof').forEach(b => {
+        b.addEventListener('click', () => {
+          const res = DB.toggleSuspensionBarbero(b.dataset.barbero);
+          showToast(res === 'suspendido' ? 'Profesional suspendido' : 'Profesional reactivado', 'info');
+          cargarDatos();
+        });
+      });
+    }
+
+    // FILTROS DE NEGOCIOS
+    document.querySelectorAll('[data-filtro-vert]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-filtro-vert]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtroVertActual = btn.dataset.filtroVert;
+        renderDirectorioNegocios();
+      });
+    });
+
+    document.getElementById('inp-buscar-negocio')?.addEventListener('input', (e) => {
+      filtroTextoNegocio = e.target.value.trim();
+      renderDirectorioNegocios();
+    });
+
+    // ==========================================
+    // RENDER DIRECTORIO GLOBAL DE PROFESIONALES
+    // ==========================================
+    function renderDirectorioProfesionales() {
+      const barberos = DB.getBarberos();
+      const negocios = DB.getNegocios();
+      const cont = document.getElementById('lista-directorio-profesionales');
+
+      let lista = barberos.filter(b => {
+        const susc = b.suscripcion || {};
+        const est = susc.estadoPago || 'al_dia';
+
+        if (filtroEstProfActual === 'al_dia' && est !== 'al_dia') return false;
+        if (filtroEstProfActual === 'morosos' && (est === 'al_dia' || est === 'suspendido' || est === 'cancelado')) return false;
+        if (filtroEstProfActual === 'suspendidos' && (est !== 'suspendido' && est !== 'cancelado')) return false;
+
+        if (filtroTextoProf) {
+          const t = filtroTextoProf.toLowerCase();
+          const neg = negocios.find(n => n.id === b.negocioId);
+          const nom = (b.nombre || '').toLowerCase();
+          const tel = (b.telefono || '').toLowerCase();
+          const nomNeg = (neg?.nombre || '').toLowerCase();
+          if (!nom.includes(t) && !tel.includes(t) && !nomNeg.includes(t)) return false;
+        }
+        return true;
+      });
+
+      if (lista.length === 0) {
+        cont.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:30px;">No se encontraron profesionales con los filtros seleccionados.</p>';
+        return;
+      }
+
+      cont.innerHTML = lista.map(b => {
+        const neg = negocios.find(n => n.id === b.negocioId);
+        const vert = VERTICALES[neg?.tipoNegocio || 'barberia'] || VERTICALES.barberia;
+        const susc = b.suscripcion || {};
+        const est = susc.estadoPago || 'al_dia';
+        const waLink = getWhatsAppLink(b.telefono, `Hola ${b.nombre}, te saludo de CÍTALO.`);
+
+        let badgeClass = 'badge-sub-activa';
+        if (est === 'por_vencer') badgeClass = 'badge-sub-porvencer';
+        else if (est === 'prorroga') badgeClass = 'badge-sub-prorroga';
+        else if (est === 'vencido') badgeClass = 'badge-sub-vencido';
+        else if (est === 'suspendido') badgeClass = 'badge-sub-suspendido';
+        else if (est === 'cancelado') badgeClass = 'badge-sub-cancelado';
+
+        return `
+          <div style="background: var(--bg-surface-elevated); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <img src="${b.fotoUrl || './assets/icons/icon.svg'}" style="width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 2px solid ${vert.colorHex};" alt="${b.nombre}">
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span style="font-weight: 800; font-size: 1.05rem;">${b.nombre}</span>
+                  <span class="badge ${badgeClass}">${est.toUpperCase()}</span>
+                  <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 700;">${vert.icono} ${neg?.nombre || 'Negocio'}</span>
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 3px;">
+                  📞 ${b.telefono || 'Sin teléfono'} · Especialidad: ${b.especialidad || vert.personalSingular} · Próximo cobro: <b>${susc.proximoVencimiento || 'N/A'}</b>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+              ${waLink ? `
+                <a href="${waLink}" target="_blank" class="btn btn-outline btn-sm" style="color: #25D366; border-color: rgba(37,211,102,0.4);" title="Chatear por WhatsApp">
+                  💬 WhatsApp
+                </a>
+              ` : ''}
+              <button class="btn btn-primary btn-sm btn-prof-pago-modal" data-barbero="${b.id}" data-negocio="${b.negocioId}">
+                💵 Cobrar (RD$ 200 o Bloque)
+              </button>
+              <button class="btn btn-secondary btn-sm btn-prof-prorroga" data-barbero="${b.id}">
+                ⏳ Prórroga (3d)
+              </button>
+              <button class="btn btn-outline btn-sm btn-prof-susp" data-barbero="${b.id}" style="${b.activo ? 'color: var(--accent-red);' : 'color: var(--accent-green);'}">
+                ${b.activo ? '⛔ Suspender' : '✅ Reactivar'}
+              </button>
+              <button class="btn btn-ghost btn-sm btn-prof-cancel" data-barbero="${b.id}" style="color: var(--text-muted);" title="Cancelar suscripción">
+                🚫 Cancelar
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      cont.querySelectorAll('.btn-prof-pago-modal').forEach(btn => {
+        btn.addEventListener('click', () => abrirModalCobroRapido(btn.dataset.negocio, btn.dataset.barbero));
+      });
+
+      cont.querySelectorAll('.btn-prof-prorroga').forEach(btn => {
+        btn.addEventListener('click', () => {
+          DB.darProrrogaBarbero(btn.dataset.barbero, 3);
+          showToast('Prórroga otorgada por 3 días', 'info');
+          cargarDatos();
+          renderDirectorioProfesionales();
+        });
+      });
+
+      cont.querySelectorAll('.btn-prof-susp').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const res = DB.toggleSuspensionBarbero(btn.dataset.barbero);
+          showToast(res === 'suspendido' ? 'Profesional suspendido' : 'Profesional reactivado', 'info');
+          cargarDatos();
+          renderDirectorioProfesionales();
+        });
+      });
+
+      cont.querySelectorAll('.btn-prof-cancel').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (confirm('¿Cancelar suscripción de este profesional? Quedará inactivo sin borrar su historial.')) {
+            DB.cambiarEstadoSuscripcionBarbero(btn.dataset.barbero, 'cancelado');
+            showToast('Suscripción cancelada', 'info');
+            cargarDatos();
+            renderDirectorioProfesionales();
+          }
+        });
+      });
+    }
+
+    // FILTROS DE PROFESIONALES
+    document.querySelectorAll('[data-filtro-est-prof]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-filtro-est-prof]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtroEstProfActual = btn.dataset.filtroEstProf;
+        renderDirectorioProfesionales();
+      });
+    });
+
+    document.getElementById('inp-buscar-profesional')?.addEventListener('input', (e) => {
+      filtroTextoProf = e.target.value.trim();
+      renderDirectorioProfesionales();
+    });
+
+    // ==========================================
+    // RENDER LIBRO CONTABLE & REPORTES
+    // ==========================================
+    function renderLibroContable() {
+      const stats = DB.getStatsPlataforma();
+      const cont = document.getElementById('tabla-libro-contable');
+      const cobros = stats.historialCobros || [];
+
+      let filtrados = cobros;
+      if (filtroTextoLibro) {
+        const t = filtroTextoLibro.toLowerCase();
+        filtrados = cobros.filter(c => {
+          return (c.concepto || '').toLowerCase().includes(t) ||
+                 (c.negocioNombre || '').toLowerCase().includes(t) ||
+                 (c.personalNombre || '').toLowerCase().includes(t) ||
+                 (c.metodo || '').toLowerCase().includes(t);
+        });
+      }
+
+      if (filtrados.length === 0) {
+        cont.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 24px;">No hay transacciones asentadas aún.</p>';
+        return;
+      }
+
+      cont.innerHTML = filtrados.map(c => {
+        const esInst = c.tipo === 'instalacion';
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface-elevated); padding: 12px 16px; border-radius: var(--radius-md); border-left: 4px solid ${esInst ? 'var(--accent-blue)' : 'var(--accent-green)'}; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <div style="font-weight: 800; font-size: 0.95rem;">
+                ${esInst ? '🏢' : '💵'} ${c.concepto || 'Cobro registrado'}
+              </div>
+              <div style="font-size: 0.82rem; color: var(--text-muted);">
+                Negocio: <b>${c.negocioNombre}</b> · Fecha: ${new Date(c.fecha).toLocaleString()} · Método: ${c.metodo || 'Efectivo / Transferencia'}
+              </div>
+            </div>
+            <div style="font-size: 1.25rem; font-weight: 900; color: ${esInst ? 'var(--accent-blue)' : 'var(--accent-green)'};">
+              +RD$ ${Number(c.monto).toLocaleString()}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('inp-buscar-libro')?.addEventListener('input', (e) => {
+      filtroTextoLibro = e.target.value.trim();
+      renderLibroContable();
+    });
+
+    // DESCARGAR CSV DEL LIBRO CONTABLE
+    document.getElementById('btn-descargar-csv-contable')?.addEventListener('click', descargarLibroContableCSV);
+
+    function descargarLibroContableCSV() {
+      const stats = DB.getStatsPlataforma();
+      const cobros = stats.historialCobros || [];
+      if (cobros.length === 0) {
+        showToast('No hay transacciones registradas para exportar', 'warning');
+        return;
+      }
+
+      let csv = 'ID,Fecha,Negocio,Tipo,Concepto,Personal,Monto_RD,Moneda,Metodo\n';
+      cobros.forEach(c => {
+        const row = [
+          c.id,
+          `"${c.fecha}"`,
+          `"${c.negocioNombre || ''}"`,
+          `"${c.tipo || ''}"`,
+          `"${(c.concepto || '').replace(/"/g, '""')}"`,
+          `"${c.personalNombre || ''}"`,
+          c.monto,
+          c.moneda || 'DOP',
+          `"${c.metodo || ''}"`
+        ];
+        csv += row.join(',') + '\n';
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `citalo-libro-contable-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Libro contable descargado en CSV para Excel', 'success');
+    }
+
+    // ASENTAR COBRO MANUAL
+    document.getElementById('btn-asentar-cobro-manual')?.addEventListener('click', () => {
+      abrirModalCobroRapido();
+    });
+
+    // ==========================================
+    // MODAL CREAR NUEVO NEGOCIO
+    // ==========================================
+    function abrirModalCrear() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 540px;">
+          <div class="modal-header">
+            <h3 class="modal-title">+ Registrar Nuevo Negocio en CÍTALO</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-crear-biz">
+              <div class="form-group">
+                <label class="form-label">Tipo de Negocio (Vertical) *</label>
+                <select id="n-tipo" class="form-select" style="font-weight: 700;">
+                  <option value="barberia">💈 Barbería (Cortes clásicos y modernos)</option>
+                  <option value="salon">💇‍♀️ Salón de Belleza / Peluquería Femenina</option>
+                  <option value="tatuaje">🖋️ Estudio de Tatuajes & Piercing</option>
+                  <option value="spa">🌿 Spa & Centro de Bienestar / Masajes</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Nombre del Negocio *</label>
+                <input type="text" id="n-nombre" class="form-input" required placeholder="Ej: Studio Glamour o Imperio Barber">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Identificador URL (Slug) *</label>
+                <input type="text" id="n-slug" class="form-input" required placeholder="glamour">
+                <small style="color: var(--text-muted); font-size: 0.78rem;">Enlace: /cliente.html?b=glamour</small>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Teléfono Móvil / WhatsApp</label>
+                  <input type="tel" id="n-tel" class="form-input" placeholder="8095551234">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Moneda de Cobro *</label>
+                  <select id="n-moneda" class="form-select">
+                    <option value="DOP" selected>Peso Dominicano (RD$)</option>
+                    <option value="USD">Dólar Estadounidense (USD $)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Dirección del Local</label>
+                <input type="text" id="n-dir" class="form-input" placeholder="Calle Central #12, Santo Domingo">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Logo o Foto de la Fachada (ImgBB)</label>
+                <input type="file" id="n-foto-file" accept="image/*" class="form-input" style="padding: 6px;">
+                <small id="txt-status-foto-biz" style="color: var(--text-muted); font-size: 0.78rem;">Sube la foto del local (se comprime y aloja en ImgBB automáticamente).</small>
+              </div>
+
+              <!-- CREDENCIALES DEL DUEÑO -->
+              <div style="background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin: 14px 0;">
+                <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: var(--accent-gold);">👤 Credenciales de Acceso para el Dueño</h4>
+                <div class="form-row">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Usuario Dueño</label>
+                    <input type="text" id="n-dueno-user" class="form-input" required placeholder="admin-negocio">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Contraseña</label>
+                    <input type="text" id="n-dueno-pass" class="form-input" required value="1234">
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                <input type="checkbox" id="n-pago-inst" checked style="width: 18px; height: 18px; accent-color: var(--accent-gold);">
+                <label for="n-pago-inst" style="font-size: 0.88rem; font-weight: 700; cursor: pointer;">
+                  Cobro de instalación de RD$ 500 completado (asentar en libro contable)
+                </label>
+              </div>
+
+              <button type="submit" id="btn-save-new-biz" class="btn btn-primary btn-full btn-lg">Guardar y Activar Negocio ✨</button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      const inpNombre = modal.querySelector('#n-nombre');
+      const inpSlug = modal.querySelector('#n-slug');
+      const inpUser = modal.querySelector('#n-dueno-user');
+
+      inpNombre?.addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+        inpSlug.value = val;
+        inpUser.value = val;
+      });
+
+      modal.querySelector('#form-crear-biz')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const tipoNegocio = modal.querySelector('#n-tipo').value;
+        const nombre = inpNombre.value.trim();
+        const slug = inpSlug.value.trim();
+        const telefono = modal.querySelector('#n-tel').value.trim();
+        const direccion = modal.querySelector('#n-dir').value.trim();
+        const moneda = modal.querySelector('#n-moneda').value;
+        const usuario = inpUser.value.trim();
+        const password = modal.querySelector('#n-dueno-pass').value.trim();
+        const pagadoInstalacion = modal.querySelector('#n-pago-inst').checked;
+        const fileInp = modal.querySelector('#n-foto-file');
+        const btnSave = modal.querySelector('#btn-save-new-biz');
+        const txtStatus = modal.querySelector('#txt-status-foto-biz');
+
+        let logoUrl = null;
+        if (fileInp.files && fileInp.files.length > 0) {
+          btnSave.disabled = true;
+          btnSave.innerText = 'Subiendo foto del negocio...';
+          txtStatus.innerText = '⏳ Subiendo a ImgBB...';
+          try {
+            logoUrl = await subirImagenAImgBB(fileInp.files[0]);
+          } catch (err) {
+            console.warn('Error subiendo foto:', err);
+            showToast('No se pudo subir la foto: ' + err.message, 'warning');
+          }
+        }
+
+        const vert = VERTICALES[tipoNegocio] || VERTICALES.barberia;
+        const nueva = DB.crearNegocio({
+          nombre,
+          slug,
+          tipoNegocio,
+          telefono,
+          direccion,
+          moneda,
+          simboloMoneda: moneda === 'USD' ? '$' : 'RD$',
+          usuario,
+          password,
+          pagadoInstalacion,
+          ...(logoUrl ? { logoUrl } : {})
+        });
+
+        // Crear servicio inicial de ejemplo acorde a la categoría
+        let servNombre = 'Servicio Principal';
+        if (tipoNegocio === 'barberia') servNombre = 'Corte tradicional';
+        else if (tipoNegocio === 'salon') servNombre = 'Lavado y Secado Estilizado';
+        else if (tipoNegocio === 'tatuaje') servNombre = 'Sesión de Tatuaje (Línea fina)';
+        else if (tipoNegocio === 'spa') servNombre = 'Masaje Relajante Antiestrés';
+
+        DB.crearServicio(nueva.id, {
+          nombre: servNombre,
+          duracionMin: tipoNegocio === 'tatuaje' ? 60 : 30,
+          descansoPostMin: 5,
+          precio: moneda === 'USD' ? 20 : 500
+        });
+
+        showToast(`¡${vert.nombre} registrada con éxito e ingresada en contabilidad!`, 'success');
+        cerrar();
+        cargarDatos();
+      });
+    }
+
+    // MODAL EDITAR NEGOCIO
+    function abrirModalEditar(id) {
+      const n = DB.getNegocio(id);
+      if (!n) return;
+
+      const vert = VERTICALES[n.tipoNegocio || 'barberia'] || VERTICALES.barberia;
+      const cuenta = n.cuenta || { usuario: n.slug, password: '1234' };
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 540px;">
+          <div class="modal-header">
+            <h3 class="modal-title">✏️ Editar Negocio: ${n.nombre}</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-edit-biz">
+              <div class="form-group">
+                <label class="form-label">Tipo de Negocio (Vertical) *</label>
+                <select id="ed-tipo" class="form-select">
+                  <option value="barberia" ${n.tipoNegocio === 'barberia' ? 'selected' : ''}>💈 Barbería</option>
+                  <option value="salon" ${n.tipoNegocio === 'salon' ? 'selected' : ''}>💇‍♀️ Salón de Belleza / Peluquería Femenina</option>
+                  <option value="tatuaje" ${n.tipoNegocio === 'tatuaje' ? 'selected' : ''}>🖋️ Estudio de Tatuajes & Piercing</option>
+                  <option value="spa" ${n.tipoNegocio === 'spa' ? 'selected' : ''}>🌿 Spa & Centro de Bienestar</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Nombre del Negocio *</label>
+                <input type="text" id="ed-nombre" class="form-input" required value="${n.nombre}">
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Teléfono</label>
+                  <input type="tel" id="ed-tel" class="form-input" value="${n.telefono || ''}">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Moneda *</label>
+                  <select id="ed-moneda" class="form-select">
+                    <option value="DOP" ${n.moneda === 'DOP' ? 'selected' : ''}>Peso Dominicano (RD$)</option>
+                    <option value="USD" ${n.moneda === 'USD' ? 'selected' : ''}>Dólar Estadounidense (USD $)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Dirección</label>
+                <input type="text" id="ed-dir" class="form-input" value="${n.direccion || ''}">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Cambiar Logo / Foto (ImgBB)</label>
+                <input type="file" id="ed-foto-file" accept="image/*" class="form-input" style="padding: 6px;">
+                <small id="ed-foto-status" style="font-size: 0.78rem; color: var(--text-muted);">Sube nueva foto para reemplazar la actual.</small>
+              </div>
+
+              <!-- CREDENCIALES DEL DUEÑO -->
+              <div style="background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin: 14px 0;">
+                <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: var(--accent-gold);">👤 Credenciales de Acceso para el Dueño</h4>
+                <div class="form-row">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Usuario Dueño</label>
+                    <input type="text" id="ed-user" class="form-input" required value="${cuenta.usuario || n.slug}">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Contraseña Dueño</label>
+                    <input type="text" id="ed-pass" class="form-input" required value="${cuenta.password || '1234'}">
+                  </div>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                <input type="checkbox" id="ed-activo" ${n.activo ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-gold);">
+                <label for="ed-activo" style="font-size: 0.88rem; font-weight: 700; cursor: pointer;">
+                  Negocio activo en el sistema
+                </label>
+              </div>
+
+              <button type="submit" id="btn-save-edit-biz" class="btn btn-primary btn-full">Guardar Cambios</button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#form-edit-biz')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btnSave = modal.querySelector('#btn-save-edit-biz');
+        const fileInp = modal.querySelector('#ed-foto-file');
+        const statusTxt = modal.querySelector('#ed-foto-status');
+
+        let logoUrl = n.logoUrl;
+        if (fileInp.files && fileInp.files.length > 0) {
+          btnSave.disabled = true;
+          btnSave.innerText = 'Subiendo foto a ImgBB...';
+          statusTxt.innerText = '⏳ Subiendo a ImgBB...';
+          try {
+            logoUrl = await subirImagenAImgBB(fileInp.files[0]);
+          } catch (err) {
+            console.warn('Error subiendo foto:', err);
+            showToast('No se pudo subir la foto: ' + err.message, 'warning');
+          }
+        }
+
+        const tipoNegocio = modal.querySelector('#ed-tipo').value;
+        const nombre = modal.querySelector('#ed-nombre').value.trim();
+        const telefono = modal.querySelector('#ed-tel').value.trim();
+        const direccion = modal.querySelector('#ed-dir').value.trim();
+        const moneda = modal.querySelector('#ed-moneda').value;
+        const usuario = modal.querySelector('#ed-user').value.trim();
+        const password = modal.querySelector('#ed-pass').value.trim();
+        const activo = modal.querySelector('#ed-activo').checked;
+
+        DB.actualizarNegocio(n.id, {
+          nombre,
+          tipoNegocio,
+          telefono,
+          direccion,
+          moneda,
+          simboloMoneda: moneda === 'USD' ? '$' : 'RD$',
+          activo,
+          logoUrl,
+          cuenta: { usuario, password }
+        });
+
+        showToast('Negocio actualizado con éxito', 'success');
+        cerrar();
+        cargarDatos();
+      });
+    }
+
+    document.getElementById('btn-nuevo-negocio')?.addEventListener('click', abrirModalCrear);
+
+    window.addEventListener('agendabarber:cloud_status', (e) => {
+      const banner = document.getElementById('banner-firebase-bloqueado');
+      if (banner) {
+        banner.style.display = (e.detail?.estado === 'bloqueado') ? 'block' : 'none';
+      }
+    });
+    if (DB.cloudStatus === 'bloqueado') {
+      const banner = document.getElementById('banner-firebase-bloqueado');
+      if (banner) banner.style.display = 'block';
+    }
+
+    DB.subscribe(() => {
+      if (Auth.getSuperadminSession()) cargarDatos();
+    });
+
+    verificarSesion();
+  </script>
+</body>
+</html>

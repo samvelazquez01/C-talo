@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Función auxiliar para verificar si el usuario es dueño o barbero del negocio
+    function esMiembroDelNegocio(negocioId) {
+      return request.auth != null && (
+        request.auth.uid in get(/databases/$(database)/documents/negocios/$(negocioId)).data.barberosUids ||
+        request.auth.uid == get(/databases/$(database)/documents/negocios/$(negocioId)).data.duenoUid
+      );
+    }
+
+    // Negocio: Lectura pública (para ver nombre, logo, etc.)
+    // Escritura: Solo el dueño autenticado
+    match /negocios/{negocioId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && (
+        resource.data.duenoUid == request.auth.uid ||
+        request.auth.uid in resource.data.barberosUids
+      );
+
+      // Barberos del negocio: Lectura pública
+      // Escritura: Solo miembros autorizados
+      match /barberos/{barberoId} {
+        allow read: if true;
+        allow write: if esMiembroDelNegocio(negocioId);
+      }
+
+      // Servicios del negocio: Lectura pública
+      match /servicios/{servicioId} {
+        allow read: if true;
+        allow write: if esMiembroDelNegocio(negocioId);
+      }
+
+      // Citas del negocio:
+      // - Lectura: SOLO miembros del negocio (NUNCA el público para proteger privacidad de clientes)
+      // - Escritura directa desde frontend: SOLO miembros del negocio (citas manuales, cambios de estado)
+      // - Las reservas del público se realizan EXCLUSIVAMENTE a través del Cloudflare Worker con credencial de servicio.
+      match /citas/{citaId} {
+        allow read: if esMiembroDelNegocio(negocioId);
+        allow write: if esMiembroDelNegocio(negocioId);
+      }
+
+      // Historial de clientes del negocio: Privado
+      match /clientes_historial/{clienteId} {
+        allow read, write: if esMiembroDelNegocio(negocioId);
+      }
+    }
+
+    // Disponibilidad: Lectura pública (solo contiene intervalos ocupados anonimizados para optimizar lectura)
+    // Escritura: Solo miembros del negocio o Worker
+    match /disponibilidad/{dispoId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Tokens temporales de vinculación Telegram
+    match /telegram_tokens/{tokenId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

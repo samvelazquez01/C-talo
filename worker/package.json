@@ -1,0 +1,14 @@
+{
+  "name": "agendabarber-worker",
+  "version": "1.0.0",
+  "description": "Backend único sin servidor para AgendaBarber (Costo Cero en Cloudflare Workers)",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.50.0"
+  }
+}

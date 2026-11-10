@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel del Profesional | CÍTALO</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/icon.svg">
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/dashboard.css">
+  <style>
+    /* Estilos para bloqueo interactivo de horas */
+    .slot-block-btn {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 8px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface-elevated);
+      border: 1.5px solid var(--border-subtle);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      user-select: none;
+    }
+    .slot-block-btn:hover {
+      border-color: var(--accent-gold);
+      transform: translateY(-2px);
+    }
+    .slot-block-btn.is-blocked {
+      background-color: var(--accent-red-bg);
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+    .slot-block-btn.is-occupied {
+      background-color: var(--accent-amber-bg);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+      cursor: not-allowed;
+    }
+
+    /* Fila de día semanal */
+    .day-schedule-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-surface-elevated);
+      padding: 14px 18px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- PANTALLA DE LOGIN DEL PROFESIONAL (SI NO HAY SESIÓN ACTIVA) -->
+  <div id="pantalla-login-barbero" style="display: none; min-height: 100vh; align-items: center; justify-content: center; padding: 20px;">
+    <div class="card" style="max-width: 420px; width: 100%; padding: 32px 26px; border: 2px solid var(--accent-gold); box-shadow: 0 16px 36px rgba(0,0,0,0.4); text-align: center;">
+      <span style="font-size: 3rem;">✂️</span>
+      <h2 style="font-size: 1.6rem; font-weight: 900; margin: 10px 0 6px;">Portal del Profesional</h2>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 22px;">
+        Inicia sesión para atender tu estación y ver tus citas de hoy. Tu sesión se mantendrá abierta permanentemente en este dispositivo.
+      </p>
+
+      <form id="form-login-barbero" style="text-align: left;">
+        <div class="form-group">
+          <label class="form-label">Usuario o Teléfono del Profesional *</label>
+          <input type="text" id="barbero-login-user" class="form-input" required placeholder="Ej: carlos o 8095551234" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña *</label>
+          <input type="password" id="barbero-login-pass" class="form-input" required placeholder="Tu contraseña" autocomplete="current-password">
+        </div>
+        <div id="login-barbero-error" style="display: none; color: #ef4444; font-size: 0.85rem; font-weight: 700; margin-bottom: 12px; text-align: center;">
+          Usuario o contraseña incorrectos
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top: 8px;">
+          Ingresar a Mi Estación 🚀
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PANEL PRINCIPAL DEL BARBERO / PROFESIONAL -->
+  <div id="pantalla-panel-barbero" style="display: none;">
+    <!-- NAVBAR AISLADO (SIN NAVEGACIÓN CRUZADA) -->
+    <header class="navbar" id="barbero-navbar">
+      <div class="brand" style="display: flex; align-items: center; gap: 10px;">
+        <img id="barbero-plataforma-logo" src="./assets/icons/icon.svg" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; border: 1.5px solid var(--accent-gold);" alt="CÍTALO">
+        <div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-weight: 900; font-size: 1.15rem; letter-spacing: 0.5px;">CÍTALO</span>
+            <span style="color: var(--text-muted); font-size: 0.9rem;">·</span>
+            <span id="nav-barbero-nombre" style="font-weight: 700; font-size: 0.95rem; color: var(--accent-gold);">Mi Estación</span>
+          </div>
+          <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1;">Tu cita a un click</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button id="btn-qr-barbero-propio" class="btn btn-primary btn-sm" title="Ver mi enlace directo y código QR personal">
+          📱 Mi Enlace y QR
+        </button>
+        <button id="btn-theme" class="btn btn-ghost btn-icon">🌙</button>
+        <button id="btn-logout-barbero" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
+          🚪 Cerrar Sesión
+        </button>
+      </div>
+    </header>
+
+    <main class="app-container" id="barbero-main" style="max-width: 840px; padding-top: 18px; padding-bottom: 60px;">
+      <!-- ALERTA DE CONFIGURACIÓN FIREBASE (SI ESTÁ BLOQUEADO) -->
+      <div id="banner-firebase-bloqueado" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1.5px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+        <div style="font-weight: 800; color: #f59e0b; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+          <span>⚠️</span> Sincronización en la Nube Bloqueada en Firebase
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0 0;">
+          Tus reglas de Firebase Realtime Database están en <code>.read: false, .write: false</code>. Las citas agendadas desde celulares o en modo incógnito no se reflejarán aquí hasta que pongas <code>.read: true, .write: true</code> en las Reglas de tu consola de Firebase.
+        </p>
+      </div>
+
+      <!-- ALERTA DE SUSCRIPCIÓN PAUSADA -->
+      <div id="banner-alerta-barbero" style="display: none; background: rgba(239,68,68,0.12); border: 1.5px solid #ef4444; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+        <div style="font-weight: 800; color: #ef4444; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+          <span>⚠️</span> Agenda Temporalmente Pausada
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 4px 0 0;">
+          Tu cuenta se encuentra pausada por la administración. Los clientes no pueden reservar citas contigo en este momento. Por favor, comunícate con la administración para registrar tu mensualidad de RD$ 200 y reactivar tus reservas.
+        </p>
+      </div>
+
+      <!-- PERFIL DEL BARBERO Y BOTONES DE ACCIÓN RÁPIDA -->
+      <div class="dashboard-nav">
+        <div class="barber-selector" style="display: flex; align-items: center; gap: 12px;">
+          <img id="barbero-avatar-head" src="./assets/icons/icon.svg" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-gold);" alt="Avatar">
+          <div>
+            <h3 id="txt-barbero-nombre" style="font-size: 1.15rem; font-weight: 800; margin: 0;">Mi Sillón</h3>
+            <span id="txt-barbero-esp" style="font-size: 0.82rem; color: var(--text-secondary);">Barbero Profesional</span>
+          </div>
+          <button id="btn-editar-perfil-barbero" class="btn btn-ghost btn-sm" title="Editar mis datos">✏️</button>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="btn-walkin-modal" class="btn btn-success btn-sm">+ Walk-in (Sin Cita)</button>
+          <button id="btn-cita-manual" class="btn btn-primary btn-sm">+ Cita Manual</button>
+          <button id="btn-bloquear" class="btn btn-secondary btn-sm" style="color: var(--accent-red); border-color: rgba(239, 68, 68, 0.4);">
+            ⛔ Bloquear Horas
+          </button>
+          <button id="btn-header-telegram" class="btn btn-outline btn-sm" style="display: flex; align-items: center; gap: 6px; border-color: #229ED9; color: #229ED9;" title="Notificaciones del Bot de Telegram">
+            <span>✈️</span>
+            <span id="badge-tg-status">Telegram</span>
+          </button>
+          <button id="btn-sync-cal" class="btn btn-secondary btn-sm" title="Sincronizar citas en tu iPhone o Android">
+            📅 Sync Móvil
+          </button>
+          <button id="btn-kiosk" class="btn btn-secondary btn-sm" title="Pantalla completa para tablet en mostrador">📺 Modo Pantalla</button>
+        </div>
+      </div>
+
+    <!-- PESTAÑAS: CITAS DIARIAS / AGENDA COMPLETA / MI HORARIO SEMANAL / ESTADÍSTICAS / TELEGRAM -->
+    <div class="view-tabs" style="margin-bottom: 22px;">
+      <button class="view-tab-btn active" id="tab-citas-hoy">🔥 Citas Diarias</button>
+      <button class="view-tab-btn" id="tab-agenda-completa" style="display: inline-flex; align-items: center; gap: 6px;">
+        <span>📋 Agenda Completa</span>
+        <span id="badge-total-citas-futuras" class="badge badge-gold" style="font-size: 0.72rem; padding: 2px 7px;">0</span>
+      </button>
+      <button class="view-tab-btn" id="tab-mi-horario">⏰ Mi Horario Semanal</button>
+      <button class="view-tab-btn" id="tab-mis-stats">📊 Mis Estadísticas</button>
+      <button class="view-tab-btn" id="tab-telegram" style="display: inline-flex; align-items: center; gap: 6px;">
+        <span>✈️ Bot Telegram</span>
+        <span id="tab-tg-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #94a3b8;"></span>
+      </button>
+    </div>
+
+    <!-- VISTA 1: CITAS DIARIAS -->
+    <section id="sec-hoy">
+      <!-- NAVEGADOR DE FECHAS COMPLETO -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;">
+        <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            <button id="btn-dia-prev" class="btn btn-outline btn-sm" title="Día anterior">◀ Anterior</button>
+            <button id="btn-filtro-hoy" class="btn btn-primary btn-sm">📅 Hoy</button>
+            <button id="btn-filtro-manana" class="btn btn-outline btn-sm">🌅 Mañana</button>
+            <button id="btn-dia-next" class="btn btn-outline btn-sm" title="Día siguiente">Siguiente ▶</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="inp-fecha-agenda" style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">Elegir Día:</label>
+            <input type="date" id="inp-fecha-agenda" class="form-input" style="padding: 4px 10px; font-size: 0.88rem; width: 145px; border-radius: 6px; color: var(--text-primary); background: var(--bg-surface);">
+          </div>
+        </div>
+
+        <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+          <div>
+            <span id="txt-fecha-legible-vista" style="font-weight: 800; font-size: 1.05rem; color: var(--accent-gold);">📅 Cargando fecha...</span>
+            <span id="txt-citas-resumen-dia" style="font-size: 0.85rem; color: var(--text-secondary); margin-left: 8px;">(0 citas)</span>
+          </div>
+          <button id="btn-ir-agenda-completa" class="btn btn-ghost btn-sm" style="color: var(--accent-gold); font-weight: 700;">
+            Ver Agenda Completa 👉
+          </button>
+        </div>
+      </div>
+
+      <!-- BANNER DE CITAS FUTURAS PENDIENTES (AVISO INFORMATIVO) -->
+      <div id="banner-citas-futuras-alerta" style="display: none; background: rgba(59, 130, 246, 0.1); border: 1.5px solid rgba(59, 130, 246, 0.4); border-radius: 10px; padding: 12px 16px; margin-bottom: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <span style="font-weight: 800; color: #60a5fa; font-size: 0.95rem;">🔔 Citas Agendadas para Próximos Días</span>
+            <p id="txt-banner-citas-futuras" style="font-size: 0.85rem; color: var(--text-secondary); margin: 3px 0 0;">
+              Tienes citas reservadas por clientes para fechas posteriores.
+            </p>
+          </div>
+          <button id="btn-banner-ver-proximas" class="btn btn-primary btn-sm" style="background: #2563eb; border-color: #1d4ed8;">
+            📋 Ver Agenda Completa
+          </button>
+        </div>
+      </div>
+
+      <!-- HERO CARD: PRÓXIMA CITA -->
+      <div id="contenedor-proxima-cita">
+        <!-- Generado dinámicamente -->
+      </div>
+
+      <!-- CARD: DESPUÉS -->
+      <div id="contenedor-cita-despues">
+        <!-- Generado dinámicamente -->
+      </div>
+
+      <!-- CRONOLOGÍA DE TODAS LAS CITAS DEL DÍA Y HUECOS LIBRES -->
+      <div style="margin-top: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 id="titulo-citas-dia" style="font-size: 1.2rem; font-weight: 800;">📋 Citas del Día</h3>
+          <span id="badge-ingresos-barbero" style="font-weight: 800; color: var(--accent-gold); font-size: 0.95rem;">
+            Ingresos est.: $0
+          </span>
+        </div>
+        <div id="lista-citas-dia" class="timeline-list">
+          <!-- Generado dinámicamente -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA: AGENDA COMPLETA (TODAS LAS CITAS PROGRAMADAS) -->
+    <section id="sec-agenda-completa" style="display: none;">
+      <div class="card" style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+          <div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0;">📋 Agenda Completa de Reservas</h3>
+            <p style="color: var(--text-secondary); font-size: 0.88rem; margin-top: 3px;">
+              Todas las citas reservadas por tus clientes agrupadas cronológicamente por día.
+            </p>
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-sm btn-filtro-agenda" data-filtro="proximas">Próximas</button>
+            <button class="btn btn-outline btn-sm btn-filtro-agenda" data-filtro="hoy">Hoy</button>
+            <button class="btn btn-outline btn-sm btn-filtro-agenda" data-filtro="todas">Todas</button>
+            <button class="btn btn-outline btn-sm btn-filtro-agenda" data-filtro="historial">Historial</button>
+          </div>
+        </div>
+
+        <div id="contenedor-agenda-completa-items" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Lista agrupada por fecha generada dinámicamente -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 2: MI HORARIO SEMANAL (AJUSTE AMPLIO POR CADA DÍA) -->
+    <section id="sec-horario" style="display: none;">
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">⏰ Configuración de Horario Semanal</h3>
+            <p style="color: var(--text-secondary); font-size: 0.88rem; margin-top: 2px;">
+              Configura tus turnos específicos para cada día de la semana (Lunes a Domingo). Puedes desactivar tus días libres o poner horarios diferentes los sábados.
+            </p>
+          </div>
+          <button id="btn-guardar-semana" class="btn btn-primary btn-sm">💾 Guardar Horario</button>
+        </div>
+
+        <div id="contenedor-dias-semana" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Dinámico 7 días -->
+        </div>
+      </div>
+
+      <!-- REGLAS ADICIONALES (COMPACTACIÓN, ANTICIPACIÓN) -->
+      <div class="card" style="margin-bottom: 20px;">
+        <h4 class="card-title" style="margin-bottom: 12px;">⚙️ Optimización de Agenda</h4>
+        
+        <div style="background-color: var(--accent-gold-light); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+          <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="chk-compactar" style="width: 20px; height: 20px; accent-color: var(--accent-gold); margin-top: 2px;">
+            <div>
+              <span style="font-weight: 800; font-size: 1rem; color: var(--accent-gold);">Modo 'Compactar Agenda'</span>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">
+                Evita tiempos muertos: el sistema solo ofrecerá a tus clientes turnos pegados a citas que ya tengas o al inicio/fin de tu turno.
+              </p>
+            </div>
+          </label>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Anticipación Mínima</label>
+            <select id="sel-anticipacion" class="form-select">
+              <option value="15">15 minutos</option>
+              <option value="30">30 minutos</option>
+              <option value="60">1 hora</option>
+              <option value="120">2 horas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Paso de la Cuadrícula</label>
+            <select id="sel-cuadricula" class="form-select">
+              <option value="10">Cada 10 minutos</option>
+              <option value="15">Cada 15 minutos (Estándar)</option>
+              <option value="30">Cada 30 minutos</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="btn-guardar-reglas" class="btn btn-primary btn-full">Guardar Ajustes de Algoritmo</button>
+      </div>
+
+      <!-- ENLACE PERSONAL Y QR -->
+      <div class="card" style="background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(212, 175, 55, 0.08) 100%); border: 1.5px solid var(--accent-gold); margin-bottom: 20px;">
+        <h4 style="font-weight: 800; margin-bottom: 6px;">🔗 Tu Enlace Personal de Reservas</h4>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 12px;">
+          Tus clientes van directo a elegir día y hora en tu sillón.
+        </p>
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-copiar-mi-link" class="btn btn-secondary btn-sm">📋 Copiar Mi Enlace</button>
+          <button id="btn-qr-mi-link" class="btn btn-primary btn-sm">📱 Mi Código QR</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 3: MIS ESTADÍSTICAS -->
+    <section id="sec-stats" style="display: none;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 22px;">
+        <div class="card" style="padding: 16px; margin: 0;">
+          <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Citas Totales</span>
+          <div id="stat-total-citas" style="font-size: 2.2rem; font-weight: 900; color: var(--text-primary); margin-top: 4px;">0</div>
+        </div>
+        <div class="card" style="padding: 16px; margin: 0;">
+          <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Ingresos Generados</span>
+          <div id="stat-total-ingresos" style="font-size: 2.2rem; font-weight: 900; color: var(--accent-gold); margin-top: 4px;">$0</div>
+        </div>
+        <div class="card" style="padding: 16px; margin: 0;">
+          <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Clientes Únicos</span>
+          <div id="stat-clientes-unicos" style="font-size: 2.2rem; font-weight: 900; color: var(--accent-blue); margin-top: 4px;">0</div>
+        </div>
+        <div class="card" style="padding: 16px; margin: 0;">
+          <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">No Asistieron</span>
+          <div id="stat-no-asistio" style="font-size: 2.2rem; font-weight: 900; color: var(--accent-red); margin-top: 4px;">0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 4: ASISTENTE DE TELEGRAM Y RECORDATORIOS -->
+    <section id="sec-telegram" style="display: none;">
+      <!-- CARD ESTADO ACTUAL -->
+      <div class="card" style="margin-bottom: 20px; border-left: 4px solid #229ED9;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+              <span style="font-size: 1.8rem;">✈️</span>
+              <div>
+                <h3 class="card-title" style="margin: 0;">Asistente Personal de Telegram</h3>
+                <span id="badge-tg-card-status" class="badge" style="background: rgba(148, 163, 184, 0.2); color: var(--text-muted); font-size: 0.82rem; margin-top: 4px; display: inline-block;">
+                  ⚪ Desconectado
+                </span>
+              </div>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; max-width: 600px; margin-top: 8px;">
+              Tu bot de Telegram te avisa en el móvil cada vez que alguien agenda, te recuerda tu próxima cita 15 min antes y te envía tu resumen del día automáticamente (a Costo Cero vía Cloudflare Worker).
+            </p>
+          </div>
+          <div id="tg-acciones-conectado" style="display: none; gap: 8px; flex-wrap: wrap;">
+            <button id="btn-probar-telegram" class="btn btn-primary btn-sm">📲 Enviar Notificación de Prueba</button>
+            <button id="btn-desconectar-telegram" class="btn btn-outline btn-sm" style="color: var(--accent-red); border-color: rgba(239, 68, 68, 0.4);">Desvincular</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRID DE CONEXIÓN Y CONFIGURACIÓN -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 22px;">
+        
+        <!-- COLUMNA 1: CÓMO VINCULAR (OPCIÓN A O B) -->
+        <div class="card" style="margin: 0;">
+          <h4 class="card-title" style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>🔗</span> Vincular mi Cuenta de Telegram
+          </h4>
+
+          <!-- MÉTODO 1: ENLACE AUTOMÁTICO / QR -->
+          <div style="background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+            <div style="font-weight: 800; font-size: 0.92rem; margin-bottom: 6px; color: #229ED9;">
+              Opción A: Abrir con el Bot Oficial (Recomendado)
+            </div>
+            <p style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 12px;">
+              Abre el bot en Telegram desde tu teléfono o escanea el QR. Al tocar <strong>INICIAR</strong>, quedará vinculado de inmediato:
+            </p>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+              <a id="btn-abrir-bot-tg" href="#" target="_blank" class="btn btn-sm" style="background: #229ED9; color: white; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                <span>✈️</span> Abrir en Telegram
+              </a>
+              <button id="btn-ver-qr-tg" class="btn btn-secondary btn-sm">📱 Ver Código QR</button>
+            </div>
+            <div id="box-qr-telegram" style="display: none; text-align: center; margin-top: 14px; padding: 12px; background: white; border-radius: 8px; width: fit-content;">
+              <div id="canvas-wrap-tg"></div>
+              <div style="font-size: 0.75rem; color: #333; margin-top: 6px; font-weight: 700;">Apunta tu cámara de Telegram aquí</div>
+            </div>
+          </div>
+
+          <!-- MÉTODO 2: VINCULACIÓN DIRECTA POR CHAT ID -->
+          <div style="background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
+            <div style="font-weight: 800; font-size: 0.92rem; margin-bottom: 6px; color: var(--text-primary);">
+              Opción B: Ingresar Chat ID Manualmente
+            </div>
+            <p style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 12px;">
+              Si ya conoces tu ID o abres <code>@userinfobot</code> en Telegram para ver tu ID de usuario:
+            </p>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="inp-tg-chat-id" class="form-input" placeholder="Ej: 123456789" style="font-family: monospace; font-size: 0.92rem;">
+              <button id="btn-guardar-chat-id" class="btn btn-primary btn-sm" style="white-space: nowrap;">Vincular ID</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMNA 2: PREFERENCIAS DE RECORDATORIOS Y ALERTAS -->
+        <div class="card" style="margin: 0;">
+          <h4 class="card-title" style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>⚙️</span> Preferencias de Recordatorios
+          </h4>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+              <input type="checkbox" id="chk-tg-nueva-cita" checked style="width: 18px; height: 18px; accent-color: #229ED9; margin-top: 2px;">
+              <div>
+                <span style="font-weight: 800; font-size: 0.95rem;">Notificar Cita Nueva Inmediata</span>
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 1px;">
+                  Vibración y aviso en tu móvil en el mismo segundo que un cliente reserve.
+                </p>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+              <input type="checkbox" id="chk-tg-cancelacion" checked style="width: 18px; height: 18px; accent-color: #229ED9; margin-top: 2px;">
+              <div>
+                <span style="font-weight: 800; font-size: 0.95rem;">Notificar Cancelaciones</span>
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 1px;">
+                  Te avisa el motivo y libera tu sillón al instante.
+                </p>
+              </div>
+            </label>
+
+            <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+              <label style="font-weight: 800; font-size: 0.9rem; display: block; margin-bottom: 6px;">
+                ⏰ Recordatorio antes de cada cita:
+              </label>
+              <select id="sel-tg-recordatorio" class="form-input" style="width: 100%;">
+                <option value="5">5 minutos antes</option>
+                <option value="10">10 minutos antes</option>
+                <option value="15" selected>15 minutos antes (Recomendado)</option>
+                <option value="30">30 minutos antes</option>
+                <option value="60">1 hora antes</option>
+              </select>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+              <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin-bottom: 8px;">
+                <input type="checkbox" id="chk-tg-resumen" checked style="width: 18px; height: 18px; accent-color: #229ED9; margin-top: 2px;">
+                <div>
+                  <span style="font-weight: 800; font-size: 0.95rem;">Resumen Matutino Diario</span>
+                  <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 1px;">
+                    El bot te envía tu itinerario completo de clientes apenas empieza el día.
+                  </p>
+                </div>
+              </label>
+              <div style="display: flex; align-items: center; gap: 8px; margin-left: 28px;">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Hora de entrega:</span>
+                <input type="time" id="inp-tg-hora-resumen" class="form-input" value="08:00" style="width: 120px; padding: 4px 8px;">
+              </div>
+            </div>
+
+            <button id="btn-guardar-pref-tg" class="btn btn-primary btn-sm" style="margin-top: 4px;">
+              💾 Guardar Preferencias
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CARD GUÍA: COMANDOS DISPONIBLES EN TELEGRAM -->
+      <div class="card" style="background: rgba(34, 158, 217, 0.05); border: 1px solid rgba(34, 158, 217, 0.25);">
+        <h4 style="font-size: 0.95rem; font-weight: 800; color: #229ED9; margin-bottom: 10px;">
+          🤖 Comandos interactivos de tu Bot de Telegram:
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; font-size: 0.86rem;">
+          <div><code>/proxima</code> &mdash; Ver quién es tu próximo cliente y su teléfono.</div>
+          <div><code>/hoy</code> &mdash; Lista de todas tus citas de hoy en orden.</div>
+          <div><code>/manana</code> &mdash; Ver agenda del día de mañana.</div>
+          <div><code>/cancelar</code> &mdash; Cancelar una cita directamente desde Telegram.</div>
+          <div><code>/ayuda</code> &mdash; Menú de ayuda y soporte.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODO PANTALLA DEL LOCAL (OVERLAY FULLSCREEN) -->
+    <div id="kiosk-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #07090e; z-index: 9999; padding: 30px; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e293b; padding-bottom: 16px; margin-bottom: 24px;">
+        <div>
+          <h2 id="kiosk-biz-title" style="font-size: 2.2rem; font-weight: 900; color: #fff;">💈 Barbería</h2>
+          <p id="kiosk-barber-title" style="color: #94a3b8; font-size: 1.1rem; font-weight: 700;">Barbero</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <div id="kiosk-clock" style="font-size: 3rem; font-weight: 900; color: var(--accent-gold); font-variant-numeric: tabular-nums;">00:00:00</div>
+          <button id="btn-salir-kiosk" class="btn btn-secondary">✕ Salir</button>
+        </div>
+      </div>
+      <div id="kiosk-content" style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px;">
+        <!-- Dinámico -->
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { DB, VERTICALES } from './js/db.js';
+    import { Auth } from './js/auth.js';
+    import { ThemeManager, showToast, reproducirSonidoNuevaCita } from './js/state.js';
+    import {
+      getFechaHoyLocal,
+      getFechaMananaLocal,
+      getCuentaRegresiva,
+      sumarMinutosAHora,
+      getMinutosHoyLocal,
+      formatTime12,
+      formatTimeRange12,
+      formatearFechaLegible,
+      formatearFechaCorta,
+      sumarDiasAFecha
+    } from './js/utils/date-utils.js';
+    import { renderizarQR, descargarQR } from './js/utils/qr-generator.js';
+    import { descargarCalendarioCompletoBarberoICS } from './js/utils/ics-generator.js';
+    import { subirImagenAImgBB } from './js/utils/image-compressor.js';
+    import { calcularDisponibilidad } from './js/shared/availability.js';
+
+    function getWhatsAppLink(telefono, mensaje) {
+      if (!telefono) return '';
+      let clean = String(telefono).replace(/\D/g, '');
+      if (clean.length === 10 && (clean.startsWith('809') || clean.startsWith('829') || clean.startsWith('849'))) {
+        clean = '1' + clean;
+      }
+      return `https://wa.me/${clean}?text=${encodeURIComponent(mensaje || '')}`;
+    }
+
+    ThemeManager.init();
+    document.getElementById('btn-theme')?.addEventListener('click', () => {
+      const nuevo = ThemeManager.toggle();
+      document.getElementById('btn-theme').innerText = nuevo === 'dark' ? '🌙' : '☀️';
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const barberoParam = urlParams.get('barbero');
+
+    let barberoActual = null;
+    let negocioActual = null;
+    let ultimaCitasTotalCount = -1;
+    let fechaVista = null;
+    let filtroAgendaActual = 'proximas';
+
+    const NOMBRES_DIAS = [
+      { key: "1", nombre: "Lunes" },
+      { key: "2", nombre: "Martes" },
+      { key: "3", nombre: "Miércoles" },
+      { key: "4", nombre: "Jueves" },
+      { key: "5", nombre: "Viernes" },
+      { key: "6", nombre: "Sábado" },
+      { key: "0", nombre: "Domingo" }
+    ];
+
+    // CONTROL DE SESIÓN PERSISTENTE DEL BARBERO
+    function verificarSesion() {
+      let sesion = Auth.getBarberoSession();
+
+      // Si viene con parámetro ?barbero=slug y no hay sesión activa o es diferente
+      if (barberoParam) {
+        const barberoMatch = DB.getBarbero(barberoParam);
+        if (barberoMatch && (!sesion || sesion.barberoId !== barberoMatch.id)) {
+          const neg = DB.getNegocio(barberoMatch.negocioId);
+          sesion = {
+            barberoId: barberoMatch.id,
+            negocioId: barberoMatch.negocioId,
+            slug: barberoMatch.slug,
+            nombre: barberoMatch.nombre,
+            negocioSlug: neg?.slug || '',
+            loggedAt: Date.now()
+          };
+          localStorage.setItem('agendabarber_auth_barbero', JSON.stringify(sesion));
+        }
+      }
+
+      if (!sesion) {
+        document.getElementById('pantalla-login-barbero').style.display = 'flex';
+        document.getElementById('pantalla-panel-barbero').style.display = 'none';
+        if (barberoParam) {
+          const inpUser = document.getElementById('barbero-login-user');
+          if (inpUser) inpUser.value = barberoParam;
+        }
+      } else {
+        document.getElementById('pantalla-login-barbero').style.display = 'none';
+        document.getElementById('pantalla-panel-barbero').style.display = 'block';
+
+        barberoActual = DB.getBarbero(sesion.barberoId) || DB.getBarberos()[0];
+        if (!barberoActual) {
+          Auth.logoutBarbero();
+          verificarSesion();
+          return;
+        }
+        negocioActual = DB.getNegocio(barberoActual.negocioId);
+        render();
+      }
+    }
+
+    // FORMULARIO DE LOGIN DEL BARBERO
+    document.getElementById('form-login-barbero')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const user = document.getElementById('barbero-login-user').value.trim();
+      const pass = document.getElementById('barbero-login-pass').value.trim();
+      const res = Auth.loginBarbero(user, pass);
+      if (res.ok) {
+        document.getElementById('login-barbero-error').style.display = 'none';
+        showToast(`¡Hola, ${res.barbero.nombre}! Bienvenido a tu sillón.`, 'success');
+        verificarSesion();
+      } else {
+        document.getElementById('login-barbero-error').style.display = 'block';
+      }
+    });
+
+    // CERRAR SESIÓN DEL BARBERO
+    document.getElementById('btn-logout-barbero')?.addEventListener('click', () => {
+      if (confirm('¿Cerrar sesión de tu sillón?')) {
+        Auth.logoutBarbero();
+        showToast('Sesión de barbero cerrada', 'info');
+        verificarSesion();
+      }
+    });
+
+    // MODAL DE QR Y ENLACE PERSONAL DEL BARBERO
+    document.getElementById('btn-qr-barbero-propio')?.addEventListener('click', () => {
+      if (!barberoActual || !negocioActual) return;
+      const urlBarbero = `${window.location.origin}/cliente.html?b=${negocioActual.slug}&barbero=${barberoActual.slug}`;
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="text-align: center; max-width: 420px;">
+          <div class="modal-header">
+            <h3 class="modal-title">📱 Tu Enlace Directo y QR Personal</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <canvas id="qr-barbero-canvas" style="border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin: 0 auto; display: block;"></canvas>
+            <p style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 14px; word-break: break-all;">
+              Envía este enlace a tus clientes para que agenden directamente contigo:
+              <br><code style="color: var(--accent-gold); font-size: 0.85rem;">${urlBarbero}</code>
+            </p>
+          </div>
+          <div class="modal-footer" style="display: flex; gap: 8px; justify-content: center;">
+            <button id="btn-copiar-link-propio" class="btn btn-outline btn-sm">📋 Copiar Enlace Directo</button>
+            <button id="btn-descargar-qr-propio" class="btn btn-primary btn-sm">💾 Descargar QR (PNG)</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const canvas = modal.querySelector('#qr-barbero-canvas');
+      renderizarQR(canvas, urlBarbero, { size: 240 });
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#btn-copiar-link-propio')?.addEventListener('click', () => {
+        navigator.clipboard?.writeText(urlBarbero).then(() => showToast('Enlace personal copiado al portapapeles', 'success'));
+      });
+
+      modal.querySelector('#btn-descargar-qr-propio')?.addEventListener('click', () => {
+        descargarQR(canvas, `${barberoActual.slug}-qr-personal.png`);
+        showToast('Código QR personal descargado', 'success');
+      });
+    });
+
+    function render() {
+      if (!barberoActual) return;
+
+      const tipo = negocioActual?.tipoNegocio || 'barberia';
+      document.documentElement.dataset.vertical = tipo;
+      const vert = (VERTICALES && VERTICALES[tipo]) || (DB.VERTICALES && DB.VERTICALES[tipo]) || {
+        nombre: 'Barbería',
+        personalSingular: 'Barbero',
+        personalPlural: 'Barberos',
+        servicioSingular: 'Corte',
+        servicioPlural: 'Cortes y Servicios',
+        sillonOEspacio: 'Sillón',
+        icono: '💈'
+      };
+      const plat = DB.getPlataforma?.() || { nombre: 'CÍTALO', eslogan: 'Tu cita a un click' };
+
+      document.title = `${barberoActual.nombre} · ${vert.personalSingular} | ${negocioActual?.nombre || 'CÍTALO'}`;
+
+      const platLogo = document.getElementById('barbero-plataforma-logo');
+      if (platLogo) platLogo.src = plat.logoUrl || './assets/icons/icon.svg';
+
+      // Actualizar datos del header del barbero
+      document.getElementById('nav-barbero-nombre').innerText = `${negocioActual ? negocioActual.nombre : ''} · ${vert.sillonOEspacio}: ${barberoActual.nombre}`;
+      document.getElementById('txt-barbero-nombre').innerText = barberoActual.nombre;
+      document.getElementById('txt-barbero-esp').innerText = barberoActual.especialidad || `${vert.personalSingular} Profesional ${vert.icono}`;
+      if (barberoActual.fotoUrl) {
+        document.getElementById('barbero-avatar-head').src = barberoActual.fotoUrl;
+      }
+
+      const btnWalk = document.getElementById('btn-walkin-modal');
+      if (btnWalk) btnWalk.innerText = `+ Walk-in (${vert.sillonOEspacio})`;
+      const btnBloq = document.getElementById('btn-bloquear');
+      if (btnBloq) btnBloq.innerText = `⛔ Bloquear ${vert.sillonOEspacio}`;
+
+      // Alerta si la agenda está suspendida o vencida por el Superadmin
+      const bannerAlerta = document.getElementById('banner-alerta-barbero');
+      const estSusc = barberoActual.suscripcion?.estadoPago;
+      if (bannerAlerta) {
+        bannerAlerta.style.display = (estSusc === 'suspendido' || estSusc === 'vencido') ? 'block' : 'none';
+      }
+
+      const hoyStr = getFechaHoyLocal(negocioActual?.zonaHoraria);
+      const mananaStr = getFechaMananaLocal(negocioActual?.zonaHoraria);
+      if (!fechaVista) fechaVista = hoyStr;
+      const esHoy = (fechaVista === hoyStr);
+      const esManana = (fechaVista === mananaStr);
+
+      const btnHoy = document.getElementById('btn-filtro-hoy');
+      const btnManana = document.getElementById('btn-filtro-manana');
+      if (btnHoy && btnManana) {
+        btnHoy.className = esHoy ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
+        btnManana.className = esManana ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
+      }
+
+      const inpFecha = document.getElementById('inp-fecha-agenda');
+      if (inpFecha) inpFecha.value = fechaVista;
+
+      const txtFecha = document.getElementById('txt-fecha-legible-vista');
+      if (txtFecha) {
+        const prefijo = esHoy ? 'Hoy: ' : (esManana ? 'Mañana: ' : '');
+        txtFecha.innerText = `📅 ${prefijo}${formatearFechaLegible(fechaVista)}`;
+      }
+
+      // TODAS LAS CITAS DEL BARBERO (TODOS LOS DÍAS)
+      const todasLasCitas = DB.getCitas(negocioActual.id, barberoActual.id);
+      const citasHoy = todasLasCitas.filter(c => c.fechaLocal === fechaVista);
+      const citasFuturas = todasLasCitas.filter(c => c.fechaLocal >= hoyStr && c.estado !== 'cancelada');
+      const citasOtrosDias = todasLasCitas.filter(c => c.fechaLocal > hoyStr && c.estado !== 'cancelada');
+
+      // Actualizar contador del badge en la pestaña "Agenda Completa"
+      const badgeFuturas = document.getElementById('badge-total-citas-futuras');
+      if (badgeFuturas) badgeFuturas.innerText = citasFuturas.length;
+
+      // Resumen del día
+      const txtResumen = document.getElementById('txt-citas-resumen-dia');
+      const citasDiaActivas = citasHoy.filter(c => c.estado !== 'cancelada');
+      if (txtResumen) {
+        txtResumen.innerText = `(${citasDiaActivas.length} ${citasDiaActivas.length === 1 ? 'cita' : 'citas'})`;
+      }
+      const titCitasDia = document.getElementById('titulo-citas-dia');
+      if (titCitasDia) {
+        titCitasDia.innerText = esHoy ? '📋 Todas mis Citas de Hoy' : `📋 Citas del ${formatearFechaLegible(fechaVista)}`;
+      }
+
+      // Alerta sonora y toast cuando entra una cita nueva en tiempo real
+      if (todasLasCitas.length > ultimaCitasTotalCount && ultimaCitasTotalCount >= 0) {
+        reproducirSonidoNuevaCita();
+        const nuevaCita = todasLasCitas[todasLasCitas.length - 1];
+        showToast(`🔔 ¡Nueva cita recibida! ${nuevaCita.clienteNombre} para el ${formatearFechaLegible(nuevaCita.fechaLocal)} a las ${formatTime12(nuevaCita.horaInicioLocal)}.`, 'success');
+      }
+      ultimaCitasTotalCount = todasLasCitas.length;
+
+      // Banner de citas futuras agendadas
+      const bannerFuturas = document.getElementById('banner-citas-futuras-alerta');
+      const txtBannerFuturas = document.getElementById('txt-banner-citas-futuras');
+      if (bannerFuturas && txtBannerFuturas) {
+        if (citasOtrosDias.length > 0) {
+          bannerFuturas.style.display = 'block';
+          const prox = citasOtrosDias[0];
+          txtBannerFuturas.innerHTML = `Tienes <strong>${citasOtrosDias.length} cita(s)</strong> programada(s) para los próximos días. La más próxima es el <strong>${formatearFechaLegible(prox.fechaLocal)}</strong> a las <strong>${formatTime12(prox.horaInicioLocal)}</strong> con <strong>${prox.clienteNombre}</strong>.`;
+        } else {
+          bannerFuturas.style.display = 'none';
+        }
+      }
+
+      // 1. PRÓXIMA CITA Y DESPUÉS (FORMATO 12 HORAS)
+      const ahoraMin = getMinutosHoyLocal(negocioActual?.zonaHoraria);
+      const candidatas = citasDiaActivas.filter(c => {
+        const [hh, mm] = (c.horaFinLocal || c.horaInicioLocal).split(':').map(Number);
+        return c.estado === 'en_proceso' || c.estado === 'llego' || (c.estado === 'confirmada' && (hh * 60 + mm) >= ahoraMin - 15);
+      });
+
+      const proxima = candidatas[0] || null;
+      const despues = candidatas[1] || null;
+
+      // RENDER HERO PRÓXIMA CITA
+      const contProxima = document.getElementById('contenedor-proxima-cita');
+      if (!esHoy) {
+        contProxima.innerHTML = `
+          <div class="card" style="padding: 16px 20px; border-left: 4px solid var(--accent-gold); margin-bottom: 20px; background: rgba(212, 175, 55, 0.08);">
+            <div style="font-weight: 800; font-size: 1.05rem; color: var(--accent-gold);">📅 Itinerario Programado: ${formatearFechaLegible(fechaVista)}</div>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+              Mostrando las citas programadas para este día. Pulsa el botón <strong>"📅 Hoy"</strong> para regresar a la vista de tu ${vert.sillonOEspacio.toLowerCase()} en vivo.
+            </p>
+          </div>
+        `;
+        document.getElementById('contenedor-cita-despues').innerHTML = '';
+      } else if (proxima) {
+        const cd = getCuentaRegresiva(proxima.fechaLocal, proxima.horaInicioLocal, negocioActual?.zonaHoraria);
+        const waLink = getWhatsAppLink(proxima.clienteTelefono, `Hola ${proxima.clienteNombre}, te saludo de ${negocioActual?.nombre || 'la barbería'}. Te contacto respecto a tu próxima cita hoy a las ${formatTime12(proxima.horaInicioLocal)}.`);
+        contProxima.innerHTML = `
+          <div class="hero-next-card pulse-animation">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <span class="hero-tag">🔥 PRÓXIMA CITA (${vert.sillonOEspacio.toUpperCase()})</span>
+              <span class="hero-countdown">⏳ ${cd}</span>
+            </div>
+
+            <div class="hero-time">${formatTimeRange12(proxima.horaInicioLocal, proxima.horaFinLocal)}</div>
+            <div class="hero-client" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <span style="font-size: 1.15rem; font-weight: 800;">${proxima.clienteNombre}</span>
+                <a href="tel:${proxima.clienteTelefono}" class="hero-phone-link">📞 ${proxima.clienteTelefono}</a>
+              </div>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                ${waLink ? `
+                  <a href="${waLink}" target="_blank" class="btn btn-outline btn-sm" style="color: #25D366; border-color: rgba(37, 211, 102, 0.4); display: inline-flex; align-items: center; gap: 4px;">
+                    <span>💬</span> WhatsApp
+                  </a>
+                ` : ''}
+                <button class="btn btn-ghost btn-sm btn-editar-cita" data-id="${proxima.id}" title="Editar cita">✏️</button>
+              </div>
+            </div>
+            <div class="hero-service-badge">
+              ✂️ ${proxima.servicios.map(s => s.nombre).join(' + ')} (${proxima.duracionTotalMin} min)
+            </div>
+
+            <div class="quick-actions-bar">
+              <button class="btn-action-status btn-arrived" data-id="${proxima.id}" data-st="llego">📍 Llegó</button>
+              <button class="btn-action-status btn-progress" data-id="${proxima.id}" data-st="en_proceso">✂️ En Proceso</button>
+              <button class="btn-action-status btn-done" data-id="${proxima.id}" data-st="terminada">✓ Terminada</button>
+              <button class="btn-action-status btn-noshow" data-id="${proxima.id}" data-st="no_se_presento">✕ No Asistió</button>
+              <button class="btn-action-status btn-cancelar-modal" data-id="${proxima.id}">🚫 Cancelar</button>
+            </div>
+          </div>
+        `;
+      } else {
+        contProxima.innerHTML = `
+          <div class="card" style="text-align: center; padding: 30px 20px; background: var(--bg-surface-elevated); margin-bottom: 20px;">
+            <span style="font-size: 2.2rem;">☕</span>
+            <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 8px;">No tienes citas próximas inmediatas hoy</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">${vert.sillonOEspacio} libre. Puedes descansar o ingresar clientes presenciales.</p>
+          </div>
+        `;
+      }
+
+      // RENDER CITA DESPUÉS
+      const contDespues = document.getElementById('contenedor-cita-despues');
+      if (despues) {
+        contDespues.innerHTML = `
+          <div class="after-next-card">
+            <span class="after-tag">⏳ DESPUÉS</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h4 style="font-size: 1.1rem; font-weight: 800;">
+                  ${formatTime12(despues.horaInicioLocal)} · ${despues.clienteNombre}
+                </h4>
+                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                  ${despues.servicios.map(s => s.nombre).join(', ')} · 📞 ${despues.clienteTelefono}
+                </p>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn btn-secondary btn-sm btn-quick-llego" data-id="${despues.id}">Llegó</button>
+                <button class="btn btn-ghost btn-sm btn-editar-cita" data-id="${despues.id}">✏️</button>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        contDespues.innerHTML = '';
+      }
+
+      // RENDER TODAS LAS CITAS DEL DÍA
+      const contLista = document.getElementById('lista-citas-dia');
+      const totalIngresos = citasDiaActivas.reduce((sum, c) => {
+        return sum + (c.servicios || []).reduce((acc, s) => acc + (s.precio || 0), 0);
+      }, 0);
+      document.getElementById('badge-ingresos-barbero').innerText = `Ingresos est.: ${negocioActual?.simboloMoneda || '$'}${totalIngresos.toLocaleString()}`;
+
+      if (citasHoy.length === 0) {
+        let msgExtra = '';
+        if (citasOtrosDias.length > 0) {
+          const prox = citasOtrosDias[0];
+          msgExtra = `
+            <div style="margin-top: 14px; background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 12px 14px;">
+              <p style="font-size: 0.92rem; color: var(--accent-gold); margin: 0 0 10px; font-weight: 700;">
+                💡 Tu próxima cita agendada es el <strong>${formatearFechaLegible(prox.fechaLocal)}</strong> a las <strong>${formatTime12(prox.horaInicioLocal)}</strong> con <strong>${prox.clienteNombre}</strong>.
+              </p>
+              <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-primary btn-sm btn-saltar-fecha-prox" data-fecha="${prox.fechaLocal}">
+                  📅 Ir al día de esa cita (${prox.fechaLocal})
+                </button>
+                <button class="btn btn-outline btn-sm btn-abrir-agenda-completa">
+                  📋 Ver Agenda Completa (${citasFuturas.length} citas)
+                </button>
+              </div>
+            </div>
+          `;
+        }
+        contLista.innerHTML = `
+          <div class="card" style="text-align: center; color: var(--text-muted); padding: 28px 20px;">
+            <span style="font-size: 2.2rem;">🗓️</span>
+            <div style="font-weight: 700; font-size: 1.1rem; margin-top: 8px; color: var(--text-primary);">
+              No tienes citas agendadas para el ${formatearFechaLegible(fechaVista)}.
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+              Los turnos libres están abiertos para que tus clientes reserven.
+            </p>
+            ${msgExtra}
+          </div>
+        `;
+      } else {
+        let html = '';
+        for (let i = 0; i < citasHoy.length; i++) {
+          const c = citasHoy[i];
+
+          // Detección de hueco libre
+          if (i > 0) {
+            const prev = citasHoy[i - 1];
+            const [ph, pm] = prev.horaFinLocal.split(':').map(Number);
+            const [ch, cm] = c.horaInicioLocal.split(':').map(Number);
+            const huecoMin = (ch * 60 + cm) - (ph * 60 + pm);
+            if (huecoMin >= 15) {
+              html += `
+                <div class="gap-indicator">
+                  <span>☕ Hueco libre: ${huecoMin} minutos (${formatTime12(prev.horaFinLocal)} a ${formatTime12(c.horaInicioLocal)})</span>
+                </div>
+              `;
+            }
+          }
+
+          const [fh, fm] = (c.horaFinLocal || c.horaInicioLocal).split(':').map(Number);
+          const finMin = (fh || 0) * 60 + (fm || 0);
+          const yaPasoHora = (c.fechaLocal < hoyStr) || (c.fechaLocal === hoyStr && finMin < ahoraMin);
+
+          let badgeSt = {
+            confirmada: yaPasoHora 
+              ? '<span class="badge" style="background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3);" title="La hora programada ya pasó">⏳ Pasada</span>'
+              : '<span class="badge badge-green">Confirmada</span>',
+            llego: '<span class="badge badge-gold">Llegó</span>',
+            en_proceso: '<span class="badge badge-amber">En Proceso</span>',
+            terminada: '<span class="badge badge-muted">Terminada</span>',
+            no_se_presento: '<span class="badge badge-red">No Asistió</span>',
+            cancelada: '<span class="badge badge-red">Cancelada</span>'
+          }[c.estado] || `<span class="badge badge-muted">${c.estado}</span>`;
+
+          const waLink = getWhatsAppLink(c.clienteTelefono, `Hola ${c.clienteNombre}, te saludo de ${negocioActual?.nombre || 'la barbería'}. Te contacto sobre tu cita del ${formatearFechaLegible(c.fechaLocal)} a las ${formatTime12(c.horaInicioLocal)}.`);
+
+          const puedeFinalizarRapido = (c.estado === 'confirmada' || c.estado === 'llego' || c.estado === 'en_proceso');
+
+          html += `
+            <div class="appointment-item">
+              <div class="app-time-col">
+                <div class="app-time" style="font-size: 1.1rem;">${formatTime12(c.horaInicioLocal)}</div>
+                <div class="app-duration">${c.duracionTotalMin} min</div>
+              </div>
+              <div class="app-client-col">
+                <div class="app-client-name">${c.clienteNombre}</div>
+                <div class="app-service-name">${c.servicios.map(s => s.nombre).join(', ')} · 📞 <a href="tel:${c.clienteTelefono}" style="color:var(--text-secondary); text-decoration:none;">${c.clienteTelefono}</a></div>
+                ${c.motivoCancelacion ? `<div style="font-size: 0.78rem; color: var(--accent-red);">Motivo: ${c.motivoCancelacion}</div>` : ''}
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                ${badgeSt}
+                ${puedeFinalizarRapido ? `
+                  <button class="btn btn-ghost btn-sm btn-quick-terminar" data-id="${c.id}" title="Marcar como terminada con 1 toque" style="color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); padding: 3px 8px; font-size: 0.8rem;">
+                    ✓ Terminada
+                  </button>
+                ` : ''}
+                ${waLink ? `
+                  <a href="${waLink}" target="_blank" class="btn btn-ghost btn-sm" style="color: #25D366; border: 1px solid rgba(37, 211, 102, 0.3); border-radius: 6px; padding: 3px 8px; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Chatear en WhatsApp">
+                    💬 WA
+                  </a>
+                ` : ''}
+                <button class="btn btn-ghost btn-sm btn-editar-cita" data-id="${c.id}" title="Editar Cita">✏️</button>
+              </div>
+            </div>
+          `;
+        }
+        contLista.innerHTML = html;
+      }
+
+      // RENDER DE AGENDA COMPLETA (TODAS LAS FECHAS)
+      renderAgendaCompleta();
+
+      // RENDER HORARIO SEMANAL AMPLIO (7 DÍAS)
+      renderHorarioSemanal();
+
+      // RENDER ESTADÍSTICAS DEL BARBERO
+      renderStatsBarbero();
+
+      // RENDER TELEGRAM
+      renderTelegramSection();
+
+      // Reglas
+      document.getElementById('chk-compactar').checked = Boolean(barberoActual.reglas?.compactarAgenda);
+      document.getElementById('sel-anticipacion').value = barberoActual.reglas?.anticipacionMinimaMin || 15;
+      document.getElementById('sel-cuadricula').value = barberoActual.reglas?.pasoCuadriculaMin || 15;
+
+      // Eventos de botones en estado vacío
+      contLista.querySelectorAll('.btn-saltar-fecha-prox').forEach(btn => {
+        btn.addEventListener('click', () => {
+          fechaVista = btn.dataset.fecha;
+          render();
+        });
+      });
+      contLista.querySelectorAll('.btn-abrir-agenda-completa').forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchTab(tabAgenda, secAgenda);
+        });
+      });
+
+      bindEventosCitas();
+    }
+
+    // RENDER DE AGENDA COMPLETA (TODAS LAS CITAS AGRUPADAS POR FECHA)
+    function renderAgendaCompleta() {
+      const cont = document.getElementById('contenedor-agenda-completa-items');
+      if (!cont) return;
+
+      const hoyStr = getFechaHoyLocal(negocioActual?.zonaHoraria);
+      const todas = DB.getCitas(negocioActual.id, barberoActual.id);
+
+      let filtradas = [];
+      if (filtroAgendaActual === 'proximas') {
+        filtradas = todas.filter(c => c.fechaLocal >= hoyStr && c.estado !== 'cancelada');
+      } else if (filtroAgendaActual === 'hoy') {
+        filtradas = todas.filter(c => c.fechaLocal === hoyStr);
+      } else if (filtroAgendaActual === 'historial') {
+        filtradas = todas.filter(c => c.estado === 'terminada' || c.estado === 'cancelada' || c.fechaLocal < hoyStr);
+      } else {
+        filtradas = [...todas];
+      }
+
+      // Actualizar botones de filtro
+      document.querySelectorAll('.btn-filtro-agenda').forEach(btn => {
+        btn.className = (btn.dataset.filtro === filtroAgendaActual) ? 'btn btn-primary btn-sm btn-filtro-agenda' : 'btn btn-outline btn-sm btn-filtro-agenda';
+      });
+
+      if (filtradas.length === 0) {
+        cont.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+            <span style="font-size: 2.2rem;">☕</span>
+            <div style="font-weight: 700; font-size: 1.1rem; margin-top: 8px; color: var(--text-primary);">No hay citas para mostrar en este filtro</div>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+              Comparte tu enlace personal o código QR para que tus clientes comiencen a reservar turnos.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      // Agrupar por fecha
+      const citasPorFecha = {};
+      filtradas.forEach(c => {
+        if (!citasPorFecha[c.fechaLocal]) citasPorFecha[c.fechaLocal] = [];
+        citasPorFecha[c.fechaLocal].push(c);
+      });
+
+      let html = '';
+      const fechasOrdenadas = Object.keys(citasPorFecha).sort();
+
+      fechasOrdenadas.forEach(f => {
+        const listaDelDia = citasPorFecha[f];
+        const esHoyF = (f === hoyStr);
+        const etiquetaDia = esHoyF ? `🔥 HOY - ${formatearFechaLegible(f)}` : `📅 ${formatearFechaLegible(f)}`;
+
+        html += `
+          <div class="agenda-dia-bloque" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: 800; font-size: 1.05rem; color: var(--accent-gold);">${etiquetaDia}</span>
+                <span class="badge badge-gold" style="font-size: 0.75rem;">${listaDelDia.length} ${listaDelDia.length === 1 ? 'cita' : 'citas'}</span>
+              </div>
+              <button class="btn btn-secondary btn-sm btn-saltar-a-dia" data-fecha="${f}">
+                Ver este día en vivo 🚀
+              </button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              ${listaDelDia.map(c => {
+                const badgeSt = {
+                  confirmada: '<span class="badge badge-green">Confirmada</span>',
+                  llego: '<span class="badge badge-gold">Llegó</span>',
+                  en_proceso: '<span class="badge badge-amber">En Proceso</span>',
+                  terminada: '<span class="badge badge-muted">Terminada</span>',
+                  no_se_presento: '<span class="badge badge-red">No Asistió</span>',
+                  cancelada: '<span class="badge badge-red">Cancelada</span>'
+                }[c.estado] || `<span class="badge badge-muted">${c.estado}</span>`;
+
+                const totalServ = (c.servicios || []).reduce((sum, s) => sum + (s.precio || 0), 0);
+                const precioFmt = `${negocioActual?.simboloMoneda || '$'}${totalServ.toLocaleString()}`;
+                const waLink = getWhatsAppLink(c.clienteTelefono, `Hola ${c.clienteNombre}, te saludo desde ${negocioActual?.nombre || 'la barbería'}. Te contacto sobre tu cita programada para el ${formatearFechaLegible(c.fechaLocal)} a las ${formatTime12(c.horaInicioLocal)}.`);
+
+                return `
+                  <div class="card" style="padding: 12px 16px; margin: 0; background: var(--bg-card); border-left: 3px solid var(--accent-gold);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+                      <div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                          <span style="font-weight: 800; font-size: 1.1rem; color: var(--text-primary);">${c.clienteNombre}</span>
+                          ${badgeSt}
+                          <span style="font-weight: 700; color: var(--accent-gold); font-size: 0.95rem;">${precioFmt}</span>
+                        </div>
+                        <div style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 4px;">
+                          ⏰ <strong>${formatTimeRange12(c.horaInicioLocal, c.horaFinLocal)}</strong> (${c.duracionTotalMin} min) · ✂️ ${(c.servicios || []).map(s => s.nombre).join(' + ')} · 📞 <a href="tel:${c.clienteTelefono}" style="color:var(--text-secondary); text-decoration:none;">${c.clienteTelefono}</a>
+                        </div>
+                      </div>
+
+                      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        ${waLink ? `
+                          <a href="${waLink}" target="_blank" class="btn btn-outline btn-sm" style="color: #25D366; border-color: rgba(37, 211, 102, 0.4); display: inline-flex; align-items: center; gap: 4px;" title="Chatear en WhatsApp">
+                            <span>💬</span> WhatsApp
+                          </a>
+                        ` : ''}
+                        <button class="btn btn-ghost btn-sm btn-editar-cita" data-id="${c.id}" title="Editar Cita">✏️</button>
+                      </div>
+                    </div>
+
+                    <div class="quick-actions-bar" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+                      <button class="btn-action-status btn-arrived" data-id="${c.id}" data-st="llego">📍 Llegó</button>
+                      <button class="btn-action-status btn-progress" data-id="${c.id}" data-st="en_proceso">✂️ En Proceso</button>
+                      <button class="btn-action-status btn-done" data-id="${c.id}" data-st="terminada">✓ Terminada</button>
+                      <button class="btn-action-status btn-noshow" data-id="${c.id}" data-st="no_se_presento">✕ No Asistió</button>
+                      <button class="btn-action-status btn-cancelar-modal" data-id="${c.id}">🚫 Cancelar</button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      cont.innerHTML = html;
+
+      // Eventos de botones "Ver este día en vivo"
+      cont.querySelectorAll('.btn-saltar-a-dia').forEach(btn => {
+        btn.addEventListener('click', () => {
+          fechaVista = btn.dataset.fecha;
+          switchTab(tabHoy, secHoy);
+          render();
+        });
+      });
+    }
+
+    // RENDER HORARIO SEMANAL DETALLADO (CON PAUSA / ALMUERZO FIJO POR DÍA)
+    function renderHorarioSemanal() {
+      const cont = document.getElementById('contenedor-dias-semana');
+      const hor = barberoActual.horarioSemanal || {};
+
+      cont.innerHTML = NOMBRES_DIAS.map(d => {
+        const conf = hor[d.key];
+        const esActivo = Array.isArray(conf) ? (conf.length > 0) : (conf?.activo !== false && (conf?.turnos?.length > 0));
+        const turnos = Array.isArray(conf) ? conf : (conf?.turnos || [{ inicio: "09:00", fin: "19:00" }]);
+        const t1 = turnos[0] || { inicio: "09:00", fin: "19:00" };
+
+        const pausa = conf?.pausaAlmuerzo || { activo: false, inicio: "13:00", fin: "14:00" };
+        const esPausaActiva = Boolean(pausa.activo);
+
+        return `
+          <div class="day-schedule-row" data-day="${d.key}" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px; min-width: 140px;">
+                <input type="checkbox" class="cb-dia-activo" id="dia-act-${d.key}" ${esActivo ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-gold);">
+                <label for="dia-act-${d.key}" style="font-weight: 800; font-size: 1rem; cursor: pointer;">${d.nombre}</label>
+              </div>
+
+              <div class="turnos-inputs-wrap" style="display: ${esActivo ? 'flex' : 'none'}; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 0.85rem; color: var(--text-muted);">Horario:</span>
+                  <input type="time" class="inp-dia-inicio form-input" value="${t1.inicio || '09:00'}" style="padding: 4px 8px; width: 115px; font-size: 0.88rem;">
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">a</span>
+                  <input type="time" class="inp-dia-fin form-input" value="${t1.fin || '19:00'}" style="padding: 4px 8px; width: 115px; font-size: 0.88rem;">
+                </div>
+
+                <!-- ALMUERZO O PAUSA FIJA -->
+                <div style="display: flex; align-items: center; gap: 6px; background: var(--bg-body); border: 1px dashed var(--border-color); border-radius: 6px; padding: 4px 8px;">
+                  <input type="checkbox" class="cb-dia-pausa" id="pausa-act-${d.key}" ${esPausaActiva ? 'checked' : ''} style="width: 15px; height: 15px; accent-color: var(--accent-gold);">
+                  <label for="pausa-act-${d.key}" style="font-size: 0.82rem; font-weight: 700; cursor: pointer;">🍽️ Almuerzo fijo</label>
+                  <div class="pausa-inputs-box" style="display: ${esPausaActiva ? 'inline-flex' : 'none'}; align-items: center; gap: 4px;">
+                    <input type="time" class="inp-pausa-ini form-input" value="${pausa.inicio || '13:00'}" style="padding: 2px 6px; width: 100px; font-size: 0.82rem;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">-</span>
+                    <input type="time" class="inp-pausa-fin form-input" value="${pausa.fin || '14:00'}" style="padding: 2px 6px; width: 100px; font-size: 0.82rem;">
+                  </div>
+                </div>
+              </div>
+
+              <div class="tag-dia-libre" style="display: ${esActivo ? 'none' : 'block'}; font-size: 0.88rem; font-weight: 700; color: var(--text-muted);">
+                🏖️ Día Libre (No trabaja)
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      cont.querySelectorAll('.cb-dia-activo').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+          const row = e.target.closest('.day-schedule-row');
+          row.querySelector('.turnos-inputs-wrap').style.display = e.target.checked ? 'flex' : 'none';
+          row.querySelector('.tag-dia-libre').style.display = e.target.checked ? 'none' : 'block';
+        });
+      });
+
+      cont.querySelectorAll('.cb-dia-pausa').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+          const box = e.target.closest('.day-schedule-row').querySelector('.pausa-inputs-box');
+          if (box) box.style.display = e.target.checked ? 'inline-flex' : 'none';
+        });
+      });
+    }
+
+    // GUARDAR HORARIO SEMANAL
+    document.getElementById('btn-guardar-semana')?.addEventListener('click', () => {
+      const nuevoHorario = {};
+      document.querySelectorAll('.day-schedule-row').forEach(row => {
+        const dayKey = row.dataset.day;
+        const activo = row.querySelector('.cb-dia-activo').checked;
+        const inicio = row.querySelector('.inp-dia-inicio').value;
+        const fin = row.querySelector('.inp-dia-fin').value;
+
+        const tienePausa = row.querySelector('.cb-dia-pausa')?.checked;
+        const pausaIni = row.querySelector('.inp-pausa-ini')?.value || '13:00';
+        const pausaFin = row.querySelector('.inp-pausa-fin')?.value || '14:00';
+
+        nuevoHorario[dayKey] = {
+          activo,
+          turnos: activo ? [{ inicio, fin }] : [],
+          pausaAlmuerzo: {
+            activo: Boolean(tienePausa),
+            inicio: pausaIni,
+            fin: pausaFin
+          }
+        };
+      });
+
+      barberoActual.horarioSemanal = nuevoHorario;
+      DB.actualizarBarbero(barberoActual.id, barberoActual);
+      showToast('Horario semanal y almuerzos guardados correctamente', 'success');
+    });
+
+    // RENDER ESTADÍSTICAS DEL BARBERO
+    function renderStatsBarbero() {
+      const stats = DB.getStatsBarbero(barberoActual.id);
+      document.getElementById('stat-total-citas').innerText = stats.citasTotal;
+      document.getElementById('stat-total-ingresos').innerText = `$${stats.totalIngresos.toLocaleString()}`;
+      document.getElementById('stat-clientes-unicos').innerText = stats.clientesUnicos;
+      document.getElementById('stat-no-asistio').innerText = stats.noAsistio;
+    }
+
+    // RENDER SECCIÓN TELEGRAM
+    function renderTelegramSection() {
+      const tg = barberoActual.telegram || { conectado: false, chatId: null };
+      const conectado = Boolean(tg.conectado && tg.chatId);
+
+      // Header status badge
+      const badgeH = document.getElementById('badge-tg-status');
+      if (badgeH) {
+        badgeH.innerText = conectado ? 'Telegram: Activo 🟢' : 'Telegram';
+      }
+
+      // Tab dot indicator
+      const tabDot = document.getElementById('tab-tg-dot');
+      if (tabDot) {
+        tabDot.style.background = conectado ? '#10b981' : '#94a3b8';
+      }
+
+      // Card status
+      const cardSt = document.getElementById('badge-tg-card-status');
+      const accionesConectado = document.getElementById('tg-acciones-conectado');
+      if (cardSt) {
+        if (conectado) {
+          cardSt.innerHTML = `🟢 Conectado con Chat ID: <code>${tg.chatId}</code>`;
+          cardSt.style.background = 'rgba(16, 185, 129, 0.2)';
+          cardSt.style.color = 'var(--accent-green)';
+          if (accionesConectado) accionesConectado.style.display = 'flex';
+        } else {
+          cardSt.innerHTML = '⚪ Desconectado';
+          cardSt.style.background = 'rgba(148, 163, 184, 0.2)';
+          cardSt.style.color = 'var(--text-muted)';
+          if (accionesConectado) accionesConectado.style.display = 'none';
+        }
+      }
+
+      // Bot deep link URL
+      const botUser = negocioActual.telegramBotUser || 'Asistentedeagendas_bot';
+      const tgToken = `tok_${barberoActual.id}`;
+      const deepLink = `https://t.me/${botUser}?start=${tgToken}`;
+      const btnAbrir = document.getElementById('btn-abrir-bot-tg');
+      if (btnAbrir) btnAbrir.href = deepLink;
+
+      // Input Chat ID
+      const inpId = document.getElementById('inp-tg-chat-id');
+      if (inpId) inpId.value = tg.chatId || '';
+
+      // Preferencias
+      const chkNueva = document.getElementById('chk-tg-nueva-cita');
+      if (chkNueva) chkNueva.checked = tg.alertaNuevaCita !== false;
+
+      const chkCanc = document.getElementById('chk-tg-cancelacion');
+      if (chkCanc) chkCanc.checked = tg.alertaCancelacion !== false;
+
+      const selRec = document.getElementById('sel-tg-recordatorio');
+      if (selRec) selRec.value = tg.recordatorioMinutos || 15;
+
+      const chkRes = document.getElementById('chk-tg-resumen');
+      if (chkRes) chkRes.checked = tg.resumenDiario !== false;
+
+      const inpHoraRes = document.getElementById('inp-tg-hora-resumen');
+      if (inpHoraRes) inpHoraRes.value = tg.resumenHora || '08:00';
+    }
+
+    function bindEventosCitas() {
+      // Acciones rápidas de estado
+      document.querySelectorAll('.btn-action-status[data-st]').forEach(b => {
+        b.addEventListener('click', () => {
+          DB.actualizarEstadoCita(b.dataset.id, b.dataset.st);
+          showToast(`Estado actualizado: ${b.dataset.st}`, 'success');
+          render();
+        });
+      });
+
+      document.querySelectorAll('.btn-quick-llego').forEach(b => {
+        b.addEventListener('click', () => {
+          DB.actualizarEstadoCita(b.dataset.id, 'llego');
+          showToast('Marcado como en el local', 'info');
+          render();
+        });
+      });
+
+      document.querySelectorAll('.btn-quick-terminar').forEach(b => {
+        b.addEventListener('click', () => {
+          DB.actualizarEstadoCita(b.dataset.id, 'terminada');
+          showToast('Cita completada ✓', 'success');
+          render();
+        });
+      });
+
+      document.querySelectorAll('.btn-cancelar-modal').forEach(b => {
+        b.addEventListener('click', () => {
+          const motivo = prompt('Indica el motivo de la cancelación para el cliente:', 'Imprevisto en el local');
+          if (motivo) {
+            DB.actualizarEstadoCita(b.dataset.id, 'cancelada', motivo);
+            showToast('Cita cancelada', 'info');
+            render();
+          }
+        });
+      });
+
+      // EDITAR CITA
+      document.querySelectorAll('.btn-editar-cita').forEach(b => {
+        b.addEventListener('click', () => {
+          const cita = DB.getCita(b.dataset.id);
+          if (cita) abrirModalEditarCita(cita);
+        });
+      });
+    }
+
+    // MODAL INTERACTIVO DE BLOQUEAR HORAS (TIPO PANEL DEL CLIENTE)
+    document.getElementById('btn-bloquear')?.addEventListener('click', () => {
+      abrirModalBloqueoInteractivo();
+    });
+
+    function abrirModalBloqueoInteractivo() {
+      let fechaBloqueo = getFechaHoyLocal(negocioActual?.zonaHoraria);
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 580px;">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">⛔ Bloquear / Desbloquear Horas</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">
+                Toca las horas para bloquearlas (quedarán en rojo y no se ofrecerán al cliente).
+              </p>
+            </div>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
+              <label style="font-weight: 700; font-size: 0.9rem;">Fecha:</label>
+              <input type="date" id="blk-fecha-sel" class="form-input" style="width: auto; padding: 6px 12px;" value="${fechaBloqueo}">
+              <button id="btn-blk-dia-entero" class="btn btn-outline btn-sm" style="color: var(--accent-red); border-color: rgba(239, 68, 68, 0.4);">
+                🏖️ Bloquear Día Entero
+              </button>
+            </div>
+
+            <div id="grid-horas-bloqueo" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 10px; margin-top: 10px;">
+              <!-- Botones de horas -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary btn-close-blk">Listo / Cerrar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => {
+        modal.remove();
+        render();
+      };
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.querySelector('.btn-close-blk')?.addEventListener('click', cerrar);
+
+      const inpF = modal.querySelector('#blk-fecha-sel');
+      inpF.addEventListener('change', (e) => {
+        fechaBloqueo = e.target.value;
+        renderGridBloqueo();
+      });
+
+      modal.querySelector('#btn-blk-dia-entero')?.addEventListener('click', () => {
+        DB.toggleBloqueoDiaCompleto(barberoActual.id, fechaBloqueo);
+        showToast('Estado de día completo actualizado', 'info');
+        renderGridBloqueo();
+      });
+
+      function renderGridBloqueo() {
+        const cont = modal.querySelector('#grid-horas-bloqueo');
+        const dMin = 15;
+        const duracion = 15;
+        const citas = DB.getCitas(negocioActual.id, barberoActual.id, fechaBloqueo).filter(c => c.estado !== 'cancelada');
+        const bloqueos = barberoActual.bloqueos || [];
+
+        // Verificar si el día entero está bloqueado
+        const diaEnteroBloqueado = bloqueos.some(b => b.fecha === fechaBloqueo && !b.inicio);
+        if (diaEnteroBloqueado) {
+          cont.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; background: var(--accent-red-bg); padding: 20px; border-radius: 12px; color: var(--accent-red);">
+              <span style="font-size: 2rem;">🏖️</span>
+              <h4 style="font-weight: 800; margin-top: 6px;">Día marcado como Libre / Bloqueado Completo</h4>
+              <p style="font-size: 0.85rem; margin-top: 4px;">Pulsa el botón de arriba para desbloquear este día.</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Generar cuadrícula del horario del barbero para este día
+        const slots = calcularDisponibilidad({
+          fecha: fechaBloqueo,
+          duracionServicio: duracion,
+          dMin,
+          horarioSemanal: barberoActual.horarioSemanal,
+          citasExistentes: [], // sin citas para ver todo el rango
+          bloqueos: [],
+          reglas: { pasoCuadriculaMin: 15 }
+        });
+
+        if (slots.length === 0) {
+          cont.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 20px;">No tienes turnos configurados para este día de la semana.</p>`;
+          return;
+        }
+
+        cont.innerHTML = slots.map(s => {
+          const estaBloqueado = bloqueos.some(b => b.fecha === fechaBloqueo && b.inicio === s.hora);
+          const tieneCita = citas.some(c => c.horaInicioLocal === s.hora);
+
+          let estadoClass = '';
+          let etiqueta = formatTime12(s.hora);
+
+          if (tieneCita) {
+            estadoClass = 'is-occupied';
+            etiqueta += '<span style="font-size:0.65rem; display:block;">Cita</span>';
+          } else if (estaBloqueado) {
+            estadoClass = 'is-blocked';
+            etiqueta += '<span style="font-size:0.65rem; display:block;">🚫 Bloqueado</span>';
+          }
+
+          return `
+            <button type="button" class="slot-block-btn ${estadoClass}" data-hora="${s.hora}" ${tieneCita ? 'disabled' : ''}>
+              ${etiqueta}
+            </button>
+          `;
+        }).join('');
+
+        cont.querySelectorAll('.slot-block-btn:not([disabled])').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const h = btn.dataset.hora;
+            DB.toggleBloqueoHora(barberoActual.id, fechaBloqueo, h);
+            renderGridBloqueo();
+          });
+        });
+      }
+
+      renderGridBloqueo();
+    }
+
+    // MODAL WALK-IN AMPLIADO (CON SERVICIO Y HORA DE INICIO)
+    document.getElementById('btn-walkin-modal')?.addEventListener('click', () => {
+      abrirModalWalkinAvanzado();
+    });
+
+    function abrirModalWalkinAvanzado() {
+      const servicios = DB.getServicios(negocioActual.id);
+      const ahora = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const horaActualStr = `${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`;
+      const hoyStr = getFechaHoyLocal(negocioActual?.zonaHoraria);
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <h3 class="modal-title">+ Cliente Walk-in (Presencial)</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-walkin-adv">
+              <div class="form-group" style="position: relative;">
+                <label class="form-label">Nombre del Cliente *</label>
+                <input type="text" id="wk-nombre" class="form-input" placeholder="Ej: Samuel Velásquez" autocomplete="off" list="dl-wk-clientes">
+                <datalist id="dl-wk-clientes">
+                  ${DB.getClientes(negocioActual.id).map(c => `<option value="${c.nombre}">${c.nombre} · ${c.telefono || ''}</option>`).join('')}
+                </datalist>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Teléfono Móvil (Opcional)</label>
+                <input type="tel" id="wk-tel" class="form-input" placeholder="8095551234">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Corte o Servicio a Realizar *</label>
+                <select id="wk-serv" class="form-select" required>
+                  ${servicios.map(s => `
+                    <option value="${s.id}" data-dur="${s.duracionMin}" data-precio="${s.precio}">
+                      ${s.nombre} (${s.duracionMin} min - $${s.precio})
+                    </option>
+                  `).join('')}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">¿A qué hora comenzará? *</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="time" id="wk-hora" class="form-input" value="${horaActualStr}" required>
+                  <button type="button" id="btn-wk-ahora" class="btn btn-secondary btn-sm" style="white-space: nowrap;">
+                    ⚡ Ahora mismo (${formatTime12(horaActualStr)})
+                  </button>
+                </div>
+                <small style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; display: block;">
+                  Este horario quedará inmediatamente ocupado para que ningún cliente web lo reserve.
+                </small>
+              </div>
+
+              <button type="submit" class="btn btn-success btn-lg btn-full" style="margin-top: 14px;">
+                Confirmar y Sentar en Sillón ✂️
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#btn-wk-ahora')?.addEventListener('click', () => {
+        const dt = new Date();
+        modal.querySelector('#wk-hora').value = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+      });
+
+      // Autocompletar teléfono de cliente existente
+      const inpWkNombre = modal.querySelector('#wk-nombre');
+      const inpWkTel = modal.querySelector('#wk-tel');
+      inpWkNombre?.addEventListener('input', (e) => {
+        const val = e.target.value.trim().toLowerCase();
+        if (val.length < 2) return;
+        const c = DB.getClientes(negocioActual.id).find(x => x.nombre.toLowerCase() === val);
+        if (c && c.telefono) inpWkTel.value = c.telefono;
+      });
+
+      modal.querySelector('#form-walkin-adv')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const sel = modal.querySelector('#wk-serv');
+        const opt = sel.selectedOptions[0];
+        const dur = Number(opt.dataset.dur);
+        const precio = Number(opt.dataset.precio);
+        const horaIni = modal.querySelector('#wk-hora').value;
+        const horaFin = sumarMinutosAHora(horaIni, dur);
+        const nombre = modal.querySelector('#wk-nombre').value.trim() || 'Cliente Mostrador';
+        const tel = modal.querySelector('#wk-tel').value.trim() || 'Presencial';
+
+        DB.crearCita({
+          negocioId: negocioActual.id,
+          barberoId: barberoActual.id,
+          clienteNombre: nombre,
+          clienteTelefono: tel,
+          servicios: [{ id: sel.value, nombre: opt.text.split('(')[0].trim(), duracionMin: dur, precio }],
+          duracionTotalMin: dur,
+          fechaLocal: hoyStr,
+          horaInicioLocal: horaIni,
+          horaFinLocal: horaFin,
+          estado: 'en_proceso',
+          origen: 'walkin'
+        });
+
+        showToast(`Cliente sentado en sillón: ${formatTime12(horaIni)}`, 'success');
+        cerrar();
+        render();
+      });
+    }
+
+    // MODAL EDITAR CITA EXISTENTE
+    function abrirModalEditarCita(cita) {
+      const servicios = DB.getServicios(negocioActual.id);
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <h3 class="modal-title">✏️ Editar Cita</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-edit-cita">
+              <div class="form-group">
+                <label class="form-label">Nombre del Cliente</label>
+                <input type="text" id="ec-nombre" class="form-input" required value="${cita.clienteNombre}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Teléfono Móvil</label>
+                <input type="tel" id="ec-tel" class="form-input" required value="${cita.clienteTelefono}">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Fecha</label>
+                  <input type="date" id="ec-fecha" class="form-input" required value="${cita.fechaLocal}">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Hora Inicio</label>
+                  <input type="time" id="ec-hora" class="form-input" required value="${cita.horaInicioLocal}">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Estado de la Cita</label>
+                <select id="ec-estado" class="form-select">
+                  <option value="confirmada" ${cita.estado === 'confirmada' ? 'selected' : ''}>Confirmada</option>
+                  <option value="llego" ${cita.estado === 'llego' ? 'selected' : ''}>Llegó al local</option>
+                  <option value="en_proceso" ${cita.estado === 'en_proceso' ? 'selected' : ''}>En proceso</option>
+                  <option value="terminada" ${cita.estado === 'terminada' ? 'selected' : ''}>Terminada</option>
+                  <option value="no_se_presento" ${cita.estado === 'no_se_presento' ? 'selected' : ''}>No asistió</option>
+                  <option value="cancelada" ${cita.estado === 'cancelada' ? 'selected' : ''}>Cancelada</option>
+                </select>
+              </div>
+              <div style="display: flex; justify-content: space-between; gap: 8px; margin-top: 18px;">
+                <button type="button" id="btn-eliminar-cita-def" class="btn btn-outline btn-sm" style="color: var(--accent-red); border-color: rgba(239, 68, 68, 0.4);">
+                  🗑️ Eliminar
+                </button>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#btn-eliminar-cita-def')?.addEventListener('click', () => {
+        if (confirm('¿Eliminar esta cita permanentemente?')) {
+          DB.eliminarCita(cita.id);
+          showToast('Cita eliminada', 'info');
+          cerrar();
+          render();
+        }
+      });
+
+      modal.querySelector('#form-edit-cita')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const horaIni = modal.querySelector('#ec-hora').value;
+        const dur = cita.duracionTotalMin || 30;
+
+        DB.actualizarCita(cita.id, {
+          clienteNombre: modal.querySelector('#ec-nombre').value.trim(),
+          clienteTelefono: modal.querySelector('#ec-tel').value.trim(),
+          fechaLocal: modal.querySelector('#ec-fecha').value,
+          horaInicioLocal: horaIni,
+          horaFinLocal: sumarMinutosAHora(horaIni, dur),
+          estado: modal.querySelector('#ec-estado').value
+        });
+
+        showToast('Cita actualizada con éxito', 'success');
+        cerrar();
+        render();
+      });
+    }
+
+    // MODAL EDITAR PERFIL DEL BARBERO
+    document.getElementById('btn-editar-perfil-barbero')?.addEventListener('click', () => {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <h3 class="modal-title">✏️ Editar Mi Perfil de Barbero</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-edit-barbero">
+              <div class="form-group">
+                <label class="form-label">Nombre *</label>
+                <input type="text" id="eb-nombre" class="form-input" required value="${barberoActual.nombre}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Especialidad</label>
+                <input type="text" id="eb-esp" class="form-input" value="${barberoActual.especialidad || ''}">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Teléfono Móvil</label>
+                  <input type="tel" id="eb-tel" class="form-input" value="${barberoActual.telefono || ''}">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Identificador (Slug)</label>
+                  <input type="text" id="eb-slug" class="form-input" value="${barberoActual.slug}">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Foto de Perfil (ImgBB)</label>
+                <input type="file" id="eb-foto-file" accept="image/*" class="form-input" style="padding: 6px;">
+                <small id="eb-foto-status" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; display: block;">
+                  Sube una foto desde tu galería o cámara (se optimiza y aloja gratis en ImgBB).
+                </small>
+              </div>
+              <button type="submit" id="btn-save-perfil" class="btn btn-primary btn-full">Guardar Perfil</button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#form-edit-barbero')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btnSave = modal.querySelector('#btn-save-perfil');
+        const fileInp = modal.querySelector('#eb-foto-file');
+        const statusTxt = modal.querySelector('#eb-foto-status');
+
+        let fotoUrl = barberoActual.fotoUrl;
+
+        if (fileInp?.files?.length > 0) {
+          btnSave.disabled = true;
+          btnSave.innerText = 'Subiendo foto a ImgBB...';
+          statusTxt.innerText = '⏳ Comprimiendo y subiendo a ImgBB...';
+          try {
+            fotoUrl = await subirImagenAImgBB(fileInp.files[0]);
+            showToast('Foto subida a ImgBB con éxito', 'success');
+          } catch (err) {
+            console.warn('Error subiendo imagen a ImgBB:', err);
+            showToast('No se pudo subir la foto: ' + err.message, 'warning');
+          }
+        }
+
+        DB.actualizarBarbero(barberoActual.id, {
+          nombre: modal.querySelector('#eb-nombre').value.trim(),
+          especialidad: modal.querySelector('#eb-esp').value.trim(),
+          telefono: modal.querySelector('#eb-tel').value.trim(),
+          slug: modal.querySelector('#eb-slug').value.trim(),
+          ...(fotoUrl ? { fotoUrl } : {})
+        });
+
+        showToast('Perfil actualizado', 'success');
+        cerrar();
+        init();
+      });
+    });
+
+    // MODAL CITA MANUAL
+    document.getElementById('btn-cita-manual')?.addEventListener('click', () => {
+      const servicios = DB.getServicios(negocioActual.id);
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal">
+          <div class="modal-header">
+            <h3 class="modal-title">+ Cita Manual</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-cita-man">
+              <div class="form-group" style="position: relative;">
+                <label class="form-label">Nombre del Cliente *</label>
+                <input type="text" id="cm-nombre" class="form-input" required placeholder="Ej: Samuel Velásquez" autocomplete="off" list="dl-cm-clientes">
+                <datalist id="dl-cm-clientes">
+                  ${DB.getClientes(negocioActual.id).map(c => `<option value="${c.nombre}">${c.nombre} · ${c.telefono || ''}</option>`).join('')}
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Teléfono *</label>
+                <input type="tel" id="cm-tel" class="form-input" required placeholder="8095551234">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Servicio</label>
+                <select id="cm-serv" class="form-select">
+                  ${servicios.map(s => `<option value="${s.id}" data-dur="${s.duracionMin}" data-precio="${s.precio}">${s.nombre} (${s.duracionMin} min)</option>`).join('')}
+                </select>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Fecha</label>
+                  <input type="date" id="cm-fecha" class="form-input" value="${getFechaHoyLocal(negocioActual?.zonaHoraria)}" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Hora Inicio</label>
+                  <input type="time" id="cm-hora" class="form-input" value="16:00" required>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">Agendar Cita</button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      // Autocompletar teléfono de cliente existente
+      const inpCmNombre = modal.querySelector('#cm-nombre');
+      const inpCmTel = modal.querySelector('#cm-tel');
+      inpCmNombre?.addEventListener('input', (e) => {
+        const val = e.target.value.trim().toLowerCase();
+        if (val.length < 2) return;
+        const c = DB.getClientes(negocioActual.id).find(x => x.nombre.toLowerCase() === val);
+        if (c && c.telefono) inpCmTel.value = c.telefono;
+      });
+
+      modal.querySelector('#form-cita-man')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const sel = modal.querySelector('#cm-serv');
+        const opt = sel.selectedOptions[0];
+        const dur = Number(opt.dataset.dur);
+        const precio = Number(opt.dataset.precio);
+        const hora = modal.querySelector('#cm-hora').value;
+        const fecha = modal.querySelector('#cm-fecha').value;
+
+        DB.crearCita({
+          negocioId: negocioActual.id,
+          barberoId: barberoActual.id,
+          clienteNombre: modal.querySelector('#cm-nombre').value.trim(),
+          clienteTelefono: modal.querySelector('#cm-tel').value.trim(),
+          servicios: [{ id: sel.value, nombre: opt.text.split('(')[0].trim(), duracionMin: dur, precio }],
+          duracionTotalMin: dur,
+          fechaLocal: fecha,
+          horaInicioLocal: hora,
+          horaFinLocal: sumarMinutosAHora(hora, dur),
+          estado: 'confirmada',
+          origen: 'manual'
+        });
+
+        showToast(barberoActual.telegram?.conectado ? '🔔 Cita creada y notificada a tu Telegram' : 'Cita creada', 'success');
+        cerrar();
+        render();
+      });
+    });
+
+    // MODAL DE SINCRONIZACIÓN CON CALENDARIO NATIVO (APPLE / GOOGLE)
+    document.getElementById('btn-sync-cal')?.addEventListener('click', () => {
+      abrirModalSyncCalendario();
+    });
+
+    function abrirModalSyncCalendario() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 580px;">
+          <div class="modal-header">
+            <div>
+              <h3 class="modal-title">📅 Sincronizar con Calendario del Móvil</h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">
+                100% Gratis sin instalar apps. Tus citas se sincronizan directamente en tu celular.
+              </p>
+            </div>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+            
+            <!-- TARJETA IPHONE -->
+            <div style="background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="font-size: 1.3rem;">🍎</span>
+                <h4 style="font-weight: 800; font-size: 1rem; margin: 0;">Para iPhone / iPad (Apple Calendar)</h4>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+                Descarga el archivo iCalendar y ábrelo con un toque en tu iPhone. Se añadirán todas tus citas confirmadas a la app nativa <strong>Calendario</strong> de iOS con avisos automáticos.
+              </p>
+              <button id="btn-export-apple" class="btn btn-primary btn-sm btn-full" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <span>🍎</span> Exportar e Importar en Apple Calendar (.ics)
+              </button>
+            </div>
+
+            <!-- TARJETA ANDROID / GOOGLE CALENDAR -->
+            <div style="background: var(--bg-body); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="font-size: 1.3rem;">🤖</span>
+                <h4 style="font-weight: 800; font-size: 1rem; margin: 0;">Para Android (Google Calendar)</h4>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+                Descarga el archivo .ics y ábrelo directamente en Google Calendar, o importa el archivo en <a href="https://calendar.google.com" target="_blank" style="color: var(--accent-gold);">calendar.google.com</a> para tener todas las alertas nativas en tu pantalla.
+              </p>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button id="btn-export-google" class="btn btn-secondary btn-sm" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <span>📥</span> Descargar Citas (.ics)
+                </button>
+                <a href="https://calendar.google.com/calendar/u/0/r/settings/export" target="_blank" class="btn btn-outline btn-sm" style="flex: 1; text-align: center; text-decoration: none;">
+                  Abrir Google Calendar
+                </a>
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary btn-close-modal-sync">Listo / Cerrar</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.querySelector('.btn-close-modal-sync')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      const handleExport = () => {
+        const citas = DB.getCitas(negocioActual.id, barberoActual.id);
+        descargarCalendarioCompletoBarberoICS({
+          barbero: barberoActual,
+          negocio: negocioActual,
+          citas
+        });
+        showToast('Calendario descargado (.ics)', 'success');
+      };
+
+      modal.querySelector('#btn-export-apple')?.addEventListener('click', handleExport);
+      modal.querySelector('#btn-export-google')?.addEventListener('click', handleExport);
+    }
+
+    // Pestañas
+    const tabHoy = document.getElementById('tab-citas-hoy');
+    const tabAgenda = document.getElementById('tab-agenda-completa');
+    const tabHor = document.getElementById('tab-mi-horario');
+    const tabSta = document.getElementById('tab-mis-stats');
+    const tabTg = document.getElementById('tab-telegram');
+    const secHoy = document.getElementById('sec-hoy');
+    const secAgenda = document.getElementById('sec-agenda-completa');
+    const secHor = document.getElementById('sec-horario');
+    const secSta = document.getElementById('sec-stats');
+    const secTg = document.getElementById('sec-telegram');
+
+    function switchTab(btn, sec) {
+      [tabHoy, tabAgenda, tabHor, tabSta, tabTg].forEach(b => b?.classList.remove('active'));
+      [secHoy, secAgenda, secHor, secSta, secTg].forEach(s => { if (s) s.style.display = 'none'; });
+      btn?.classList.add('active');
+      if (sec) sec.style.display = 'block';
+    }
+
+    tabHoy?.addEventListener('click', () => switchTab(tabHoy, secHoy));
+    tabAgenda?.addEventListener('click', () => switchTab(tabAgenda, secAgenda));
+    tabHor?.addEventListener('click', () => switchTab(tabHor, secHor));
+    tabSta?.addEventListener('click', () => switchTab(tabSta, secSta));
+    tabTg?.addEventListener('click', () => switchTab(tabTg, secTg));
+    document.getElementById('btn-header-telegram')?.addEventListener('click', () => switchTab(tabTg, secTg));
+    document.getElementById('btn-ir-agenda-completa')?.addEventListener('click', () => switchTab(tabAgenda, secAgenda));
+    document.getElementById('btn-banner-ver-proximas')?.addEventListener('click', () => switchTab(tabAgenda, secAgenda));
+
+    // Navegación de Fechas en Vista Diaria
+    document.getElementById('btn-filtro-hoy')?.addEventListener('click', () => {
+      fechaVista = getFechaHoyLocal(negocioActual?.zonaHoraria);
+      render();
+    });
+
+    document.getElementById('btn-filtro-manana')?.addEventListener('click', () => {
+      fechaVista = getFechaMananaLocal(negocioActual?.zonaHoraria);
+      render();
+    });
+
+    document.getElementById('btn-dia-prev')?.addEventListener('click', () => {
+      fechaVista = sumarDiasAFecha(fechaVista, -1);
+      render();
+    });
+
+    document.getElementById('btn-dia-next')?.addEventListener('click', () => {
+      fechaVista = sumarDiasAFecha(fechaVista, 1);
+      render();
+    });
+
+    document.getElementById('inp-fecha-agenda')?.addEventListener('change', (e) => {
+      if (e.target.value) {
+        fechaVista = e.target.value;
+        render();
+      }
+    });
+
+    // Filtros de Agenda Completa
+    document.querySelectorAll('.btn-filtro-agenda').forEach(btn => {
+      btn.addEventListener('click', () => {
+        filtroAgendaActual = btn.dataset.filtro;
+        renderAgendaCompleta();
+      });
+    });
+
+    // EVENTOS DE TELEGRAM
+    document.getElementById('btn-ver-qr-tg')?.addEventListener('click', () => {
+      const box = document.getElementById('box-qr-telegram');
+      if (!box) return;
+      if (box.style.display === 'block') {
+        box.style.display = 'none';
+        return;
+      }
+      box.style.display = 'block';
+      const botUser = negocioActual.telegramBotUser || 'Asistentedeagendas_bot';
+      const deepLink = `https://t.me/${botUser}?start=tok_${barberoActual.id}`;
+      const wrap = document.getElementById('canvas-wrap-tg');
+      if (wrap) {
+        wrap.innerHTML = '';
+        renderizarQR(deepLink, wrap, 170);
+      }
+    });
+
+    document.getElementById('btn-guardar-chat-id')?.addEventListener('click', () => {
+      const val = document.getElementById('inp-tg-chat-id').value.trim();
+      if (!val) {
+        showToast('Introduce tu Chat ID de Telegram', 'error');
+        return;
+      }
+      barberoActual.telegram = {
+        ...barberoActual.telegram,
+        conectado: true,
+        chatId: val,
+        fechaVinculacion: new Date().toISOString()
+      };
+      DB.actualizarBarbero(barberoActual.id, barberoActual);
+      showToast('¡Telegram vinculado correctamente!', 'success');
+      render();
+    });
+
+    document.getElementById('btn-guardar-pref-tg')?.addEventListener('click', () => {
+      barberoActual.telegram = {
+        ...barberoActual.telegram,
+        alertaNuevaCita: document.getElementById('chk-tg-nueva-cita').checked,
+        alertaCancelacion: document.getElementById('chk-tg-cancelacion').checked,
+        recordatorioMinutos: Number(document.getElementById('sel-tg-recordatorio').value),
+        resumenDiario: document.getElementById('chk-tg-resumen').checked,
+        resumenHora: document.getElementById('inp-tg-hora-resumen').value
+      };
+      DB.actualizarBarbero(barberoActual.id, barberoActual);
+      showToast('Preferencias de Telegram guardadas', 'success');
+    });
+
+    document.getElementById('btn-desconectar-telegram')?.addEventListener('click', () => {
+      if (!confirm('¿Deseas desvincular tu cuenta de Telegram? Dejarás de recibir notificaciones.')) return;
+      barberoActual.telegram = {
+        conectado: false,
+        chatId: null
+      };
+      DB.actualizarBarbero(barberoActual.id, barberoActual);
+      showToast('Telegram desvinculado', 'info');
+      render();
+    });
+
+    document.getElementById('btn-probar-telegram')?.addEventListener('click', async () => {
+      const tg = barberoActual.telegram;
+      if (!tg?.chatId) {
+        showToast('Debes vincular tu Chat ID primero', 'error');
+        return;
+      }
+
+      showToast('Enviando mensaje a tu Telegram...', 'info');
+
+      const botToken = '9289341660:AAGliANdEIlXYs4MrVxWxSkXiVmYpWnkPJs';
+      const texto = `💈 <b>¡Prueba Exitosa de AgendaBarber!</b>\n\nHola <b>${barberoActual.nombre}</b>, tu bot <b>@Asistentedeagendas_bot</b> está conectado en tiempo real.\n\n⏰ Recordatorio configurado: cada <b>${tg.recordatorioMinutos || 15} min</b> antes de tu cita.\n☀️ Resumen diario activo.\n\n¡A partir de ahora, cada cliente que agende en tu sillón te enviará una notificación aquí!`;
+
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: tg.chatId,
+            text: texto,
+            parse_mode: 'HTML'
+          })
+        });
+
+        const data = await res.json();
+        if (data.ok) {
+          showToast('🔔 ¡Mensaje recibido en tu Telegram!', 'success');
+          alert(`🎉 ¡ÉXITO TOTAL!\n\nSe envió el mensaje real a tu Telegram (Chat ID: ${tg.chatId}).\nRevisa tu teléfono, ¡debes haber recibido la notificación de @Asistentedeagendas_bot!`);
+        } else {
+          showToast('Aviso de Telegram: ' + data.description, 'warning');
+          alert(`⚠️ Telegram respondió:\n\n"${data.description}"\n\nNota: Recuerda que antes de poder recibir mensajes de tu bot, debes abrir t.me/Asistentedeagendas_bot en tu celular y tocar el botón "INICIAR".`);
+        }
+      } catch (err) {
+        console.warn('Error enviando a Telegram:', err);
+        showToast('Verifica tu conexión a internet', 'error');
+      }
+    });
+
+    // Guardar Reglas de Algoritmo
+    document.getElementById('btn-guardar-reglas')?.addEventListener('click', () => {
+      barberoActual.reglas = {
+        ...barberoActual.reglas,
+        compactarAgenda: document.getElementById('chk-compactar').checked,
+        anticipacionMinimaMin: Number(document.getElementById('sel-anticipacion').value),
+        pasoCuadriculaMin: Number(document.getElementById('sel-cuadricula').value)
+      };
+      DB.actualizarBarbero(barberoActual.id, barberoActual);
+      showToast('Ajustes guardados con éxito', 'success');
+    });
+
+    // Compartir link
+    document.getElementById('btn-copiar-mi-link')?.addEventListener('click', () => {
+      const url = `${window.location.origin}/cliente.html?b=${negocioActual.slug}&barbero=${barberoActual.slug}`;
+      navigator.clipboard?.writeText(url).then(() => {
+        showToast('Enlace personal copiado al portapapeles', 'success');
+      });
+    });
+
+    // Modo Pantalla (Kiosk)
+    const kioskEl = document.getElementById('kiosk-overlay');
+    document.getElementById('btn-kiosk')?.addEventListener('click', () => {
+      if (!negocioActual || !barberoActual) return;
+      kioskEl.style.display = 'block';
+      document.getElementById('kiosk-biz-title').innerText = `💈 ${negocioActual.nombre}`;
+      document.getElementById('kiosk-barber-title').innerText = `Estación: ${barberoActual.nombre}`;
+
+      const hoyStr = getFechaHoyLocal(negocioActual?.zonaHoraria);
+      const citasHoy = DB.getCitas(negocioActual.id, barberoActual.id, hoyStr).filter(c => c.estado !== 'cancelada' && c.estado !== 'terminada');
+      const actual = citasHoy[0] || null;
+      const cola = citasHoy.slice(1, 5);
+
+      document.getElementById('kiosk-content').innerHTML = `
+        <div style="background: #0f172a; border: 3px solid var(--accent-gold); border-radius: 24px; padding: 36px; display: flex; flex-direction: column; justify-content: center;">
+          <span style="font-size: 1.2rem; font-weight: 800; color: var(--accent-gold); text-transform: uppercase;">🔥 EN SILLÓN / PRÓXIMO</span>
+          ${actual ? `
+            <div style="font-size: 2.8rem; font-weight: 900; color: #fff; margin-top: 10px;">${actual.clienteNombre}</div>
+            <div style="font-size: 1.8rem; color: var(--accent-gold); font-weight: 800;">${formatTime12(actual.horaInicioLocal)}</div>
+            <div style="font-size: 1.3rem; color: #94a3b8; margin-top: 8px;">${actual.servicios.map(s => s.nombre).join(', ')}</div>
+          ` : `
+            <div style="font-size: 2rem; color: #94a3b8; margin-top: 10px;">Sillón Disponible</div>
+          `}
+        </div>
+
+        <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+          <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; border-bottom: 1px solid #334155; padding-bottom: 8px;">Próximos en Espera</h3>
+          ${cola.length === 0 ? `<p style="color: #64748b;">No hay más clientes en turno para hoy.</p>` : cola.map(c => `
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #131d2e; padding: 12px 16px; border-radius: 12px;">
+              <span style="font-size: 1.2rem; font-weight: 800; color: #fff;">${c.clienteNombre}</span>
+              <span style="font-size: 1.3rem; font-weight: 900; color: var(--accent-gold);">${formatTime12(c.horaInicioLocal)}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    });
+
+    document.getElementById('btn-salir-kiosk')?.addEventListener('click', () => {
+      kioskEl.style.display = 'none';
+    });
+
+    setInterval(() => {
+      const el = document.getElementById('kiosk-clock');
+      if (el) el.innerText = new Date().toLocaleTimeString();
+    }, 1000);
+
+    window.addEventListener('agendabarber:cloud_status', (e) => {
+      const banner = document.getElementById('banner-firebase-bloqueado');
+      if (banner) {
+        banner.style.display = (e.detail?.estado === 'bloqueado') ? 'block' : 'none';
+      }
+    });
+    if (DB.cloudStatus === 'bloqueado') {
+      const banner = document.getElementById('banner-firebase-bloqueado');
+      if (banner) banner.style.display = 'block';
+    }
+
+    DB.subscribe(() => {
+      const ses = Auth.getBarberoSession();
+      if (ses) {
+        barberoActual = DB.getBarbero(ses.barberoId) || barberoActual;
+        if (barberoActual) negocioActual = DB.getNegocio(barberoActual.negocioId) || negocioActual;
+        render();
+      }
+    });
+    verificarSesion();
+  </script>
+</body>
+</html>
