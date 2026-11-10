@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CÍTALO | Redirigiendo...</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/icon.svg">
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/base.css">
+  <script>
+    // Recuperación inteligente de ruta en GitHub Pages y servidores estáticos
+    (function() {
+      const loc = window.location;
+      const pathname = loc.pathname;
+      const search = loc.search;
+      const hash = loc.hash;
+
+      // Detectar si se intentó acceder a algún archivo HTML directamente
+      const match = pathname.match(/\/(cliente|barbero|dueno|superadmin|index)(\.html)?/i);
+      
+      // Obtener el directorio base de la URL actual
+      // En GitHub Pages: /barberbook/ o /
+      const pathSegments = pathname.split('/').filter(Boolean);
+      let repoPrefix = '';
+      if (loc.hostname.endsWith('github.io') && pathSegments.length > 0) {
+        // El primer segmento suele ser el nombre del repositorio
+        if (!pathSegments[0].includes('.html')) {
+          repoPrefix = '/' + pathSegments[0];
+        }
+      }
+
+      if (match) {
+        const targetPage = match[1].toLowerCase() + '.html';
+        const targetUrl = loc.origin + repoPrefix + '/' + targetPage + search + hash;
+        if (targetUrl !== loc.href) {
+          loc.replace(targetUrl);
+          return;
+        }
+      }
+
+      // Si no hay match o falló, redirigir a index.html en el repo
+      setTimeout(function() {
+        const fallbackUrl = loc.origin + repoPrefix + '/index.html' + search + hash;
+        if (fallbackUrl !== loc.href) {
+          loc.replace(fallbackUrl);
+        }
+      }, 2500);
+    })();
+  </script>
+</head>
+<body style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: var(--bg-page); color: var(--text-primary); text-align: center;">
+  <div class="card" style="max-width: 480px; width: 100%; padding: 36px 24px; border: 2px solid var(--accent-gold); box-shadow: var(--shadow-lg);">
+    <span style="font-size: 3.5rem;">💈</span>
+    <h2 style="font-size: 1.8rem; font-weight: 900; margin: 12px 0 6px;">CÍTALO</h2>
+    <p style="color: var(--accent-gold); font-weight: 700; font-size: 0.95rem; margin-bottom: 14px;">Tu cita a un click</p>
+    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 24px; line-height: 1.5;">
+      Redirigiéndote a la plataforma... Si no avanza en 3 segundos, elige tu panel a continuación:
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <a href="./cliente.html" class="btn btn-primary btn-full">📱 Portal de Reservas de Clientes</a>
+      <a href="./barbero.html" class="btn btn-secondary btn-full">✂️ Panel del Barbero / Profesional</a>
+      <a href="./dueno.html" class="btn btn-outline btn-full">🏢 Panel del Dueño de la Barbería</a>
+      <a href="./superadmin.html" class="btn btn-ghost btn-full" style="color: var(--text-muted); font-size: 0.85rem;">🔑 Panel del Administrador</a>
+    </div>
+  </div>
+</body>
+</html>

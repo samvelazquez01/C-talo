@@ -15,6 +15,7 @@ import {
 import { descargarArchivoICS } from '../utils/ics-generator.js';
 import { renderizarQR, descargarQR } from '../utils/qr-generator.js';
 import { showToast } from '../state.js';
+import { getAppBaseUrl } from '../db.js';
 
 export async function renderClientBooking(container, params = {}) {
   const { negocioSlug, barberoSlug } = params;
@@ -34,7 +35,7 @@ export async function renderClientBooking(container, params = {}) {
         <span style="font-size: 3rem;">💈</span>
         <h2 style="margin: 16px 0 8px;">Barbería no encontrada</h2>
         <p style="color: var(--text-secondary); margin-bottom: 20px;">El enlace /b/${negocioSlug} no corresponde a ninguna barbería activa.</p>
-        <a href="/" class="btn btn-primary">Ir al Inicio</a>
+        <a href="./index.html" class="btn btn-primary">Ir al Inicio</a>
       </div>
     `;
     return;
@@ -473,7 +474,7 @@ export async function renderClientBooking(container, params = {}) {
 
   function renderPantallaConfirmacion() {
     const c = citaConfirmada;
-    const urlGestion = `${window.location.origin}/cita/${c.tokenCliente}`;
+    const urlGestion = `${getAppBaseUrl()}cliente.html?b=${c.negocioSlug || ''}&cita=${c.tokenCliente}`;
 
     container.innerHTML = `
       <div class="card confirmation-card animate-fade-in" style="max-width: 540px; margin: 30px auto;">

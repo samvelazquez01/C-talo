@@ -96,7 +96,7 @@ export async function renderClientView(container, params = {}) {
               Cancelar mi Cita
             </button>
           ` : `
-            <a href="/b/${negocio?.slug || 'la-barberia'}" class="btn btn-primary btn-full">
+            <a href="./cliente.html?b=${negocio?.slug || 'la-barberia'}" class="btn btn-primary btn-full">
               Reservar un Nuevo Turno ✂️
             </a>
           `}
@@ -132,7 +132,7 @@ export async function renderClientView(container, params = {}) {
         <span style="font-size: 2.5rem;">⚠️</span>
         <h3 style="margin: 14px 0 8px;">Cita no encontrada</h3>
         <p style="color: var(--text-secondary); margin-bottom: 20px;">${msg}</p>
-        <a href="/" class="btn btn-primary">Volver al Inicio</a>
+        <a href="./index.html" class="btn btn-primary">Volver al Inicio</a>
       </div>
     `;
   }

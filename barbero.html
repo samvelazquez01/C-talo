@@ -55,6 +55,209 @@
       flex-wrap: wrap;
       gap: 12px;
     }
+
+    .dashboard-action-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* ==========================================================
+       OPTIMIZACIONES MÓVILES EXCLUSIVAS PARA SMARTPHONES (PANTALLA)
+       ========================================================== */
+    @media (max-width: 640px) {
+      #barbero-navbar {
+        padding: 6px 10px !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+      }
+      #barbero-navbar .brand {
+        gap: 6px !important;
+      }
+      #barbero-navbar .brand img {
+        width: 26px !important;
+        height: 26px !important;
+      }
+      #nav-barbero-nombre {
+        font-size: 0.78rem !important;
+        max-width: 120px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        display: inline-block !important;
+      }
+      #barbero-navbar .nav-actions {
+        gap: 4px !important;
+      }
+      #barbero-navbar .nav-actions .btn {
+        padding: 4px 8px !important;
+        font-size: 0.75rem !important;
+        height: 30px !important;
+      }
+      .txt-btn-qr {
+        display: none !important;
+      }
+      .txt-btn-logout {
+        display: none !important;
+      }
+      .txt-btn-logout-mob {
+        display: inline !important;
+      }
+
+      #barbero-main {
+        padding: 8px 8px 60px !important;
+        max-width: 100vw !important;
+      }
+
+      .dashboard-nav {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        margin-bottom: 10px !important;
+      }
+
+      .barber-selector {
+        width: 100% !important;
+        background: var(--bg-surface-elevated) !important;
+        padding: 8px 12px !important;
+        border-radius: var(--radius-md) !important;
+      }
+      #barbero-avatar-head {
+        width: 38px !important;
+        height: 38px !important;
+      }
+      #txt-barbero-nombre {
+        font-size: 0.95rem !important;
+      }
+      #txt-barbero-esp {
+        font-size: 0.74rem !important;
+      }
+
+      .dashboard-action-btns {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+        width: 100% !important;
+      }
+      .dashboard-action-btns .btn {
+        padding: 7px 4px !important;
+        font-size: 0.76rem !important;
+        justify-content: center !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+
+      .view-tabs {
+        display: flex !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        gap: 4px !important;
+        padding: 3px 2px !important;
+        margin-bottom: 12px !important;
+      }
+      .view-tabs::-webkit-scrollbar {
+        display: none !important;
+      }
+      .view-tab-btn {
+        flex-shrink: 0 !important;
+        padding: 6px 10px !important;
+        font-size: 0.78rem !important;
+      }
+
+      .date-nav-card {
+        padding: 8px 10px !important;
+        margin-bottom: 12px !important;
+      }
+      .date-nav-row-btns {
+        display: flex !important;
+        gap: 3px !important;
+        flex: 1 !important;
+      }
+      .date-nav-row-btns .btn {
+        padding: 5px 6px !important;
+        font-size: 0.74rem !important;
+        flex: 1 !important;
+        text-align: center !important;
+      }
+      #inp-fecha-agenda {
+        width: 110px !important;
+        padding: 3px 4px !important;
+        font-size: 0.74rem !important;
+      }
+
+      .hero-next-card {
+        padding: 12px 14px !important;
+        border-radius: var(--radius-md) !important;
+        margin-bottom: 12px !important;
+      }
+      .hero-time {
+        font-size: 1.6rem !important;
+        margin-bottom: 2px !important;
+      }
+      .hero-client {
+        font-size: 1.05rem !important;
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+      }
+      .hero-service-badge {
+        padding: 4px 8px !important;
+        font-size: 0.78rem !important;
+        margin: 6px 0 10px !important;
+      }
+      .quick-actions-bar {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 4px !important;
+        margin-top: 8px !important;
+      }
+      .btn-action-status {
+        padding: 6px 2px !important;
+        font-size: 0.72rem !important;
+        border-radius: var(--radius-sm) !important;
+      }
+
+      #banner-citas-futuras-alerta {
+        padding: 8px 10px !important;
+        margin-bottom: 12px !important;
+      }
+      #banner-citas-futuras-alerta p {
+        font-size: 0.76rem !important;
+      }
+
+      .timeline-header-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+      }
+      #titulo-citas-dia {
+        font-size: 0.98rem !important;
+      }
+      #badge-ingresos-barbero {
+        font-size: 0.76rem !important;
+      }
+
+      .appointment-item {
+        padding: 8px 10px !important;
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+        border-radius: var(--radius-md) !important;
+      }
+      .app-time {
+        font-size: 0.95rem !important;
+      }
+      .app-duration {
+        font-size: 0.7rem !important;
+      }
+      .app-client-name {
+        font-size: 0.88rem !important;
+      }
+      .app-service-name {
+        font-size: 0.74rem !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -90,29 +293,29 @@
   <div id="pantalla-panel-barbero" style="display: none;">
     <!-- NAVBAR AISLADO (SIN NAVEGACIÓN CRUZADA) -->
     <header class="navbar" id="barbero-navbar">
-      <div class="brand" style="display: flex; align-items: center; gap: 10px;">
+      <div class="brand" style="display: flex; align-items: center; gap: 8px;">
         <img id="barbero-plataforma-logo" src="./assets/icons/icon.svg" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; border: 1.5px solid var(--accent-gold);" alt="CÍTALO">
         <div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="font-weight: 900; font-size: 1.15rem; letter-spacing: 0.5px;">CÍTALO</span>
-            <span style="color: var(--text-muted); font-size: 0.9rem;">·</span>
-            <span id="nav-barbero-nombre" style="font-weight: 700; font-size: 0.95rem; color: var(--accent-gold);">Mi Estación</span>
+            <span style="color: var(--text-muted); font-size: 0.85rem;">·</span>
+            <span id="nav-barbero-nombre" style="font-weight: 700; font-size: 0.88rem; color: var(--accent-gold); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">Mi Estación</span>
           </div>
           <span style="font-size: 0.7rem; color: var(--text-secondary); display: block; line-height: 1;">Tu cita a un click</span>
         </div>
       </div>
       <div class="nav-actions">
         <button id="btn-qr-barbero-propio" class="btn btn-primary btn-sm" title="Ver mi enlace directo y código QR personal">
-          📱 Mi Enlace y QR
+          📱 <span class="txt-btn-qr">Mi Enlace y </span>QR
         </button>
         <button id="btn-theme" class="btn btn-ghost btn-icon">🌙</button>
         <button id="btn-logout-barbero" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
-          🚪 Cerrar Sesión
+          🚪 <span class="txt-btn-logout">Cerrar Sesión</span><span class="txt-btn-logout-mob" style="display:none;">Salir</span>
         </button>
       </div>
     </header>
 
-    <main class="app-container" id="barbero-main" style="max-width: 840px; padding-top: 18px; padding-bottom: 60px;">
+    <main class="app-container" id="barbero-main" style="max-width: 840px; padding-top: 14px; padding-bottom: 60px;">
       <!-- ALERTA DE CONFIGURACIÓN FIREBASE (SI ESTÁ BLOQUEADO) -->
       <div id="banner-firebase-bloqueado" style="display: none; background: rgba(245, 158, 11, 0.12); border: 1.5px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
         <div style="font-weight: 800; color: #f59e0b; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
@@ -135,16 +338,16 @@
 
       <!-- PERFIL DEL BARBERO Y BOTONES DE ACCIÓN RÁPIDA -->
       <div class="dashboard-nav">
-        <div class="barber-selector" style="display: flex; align-items: center; gap: 12px;">
-          <img id="barbero-avatar-head" src="./assets/icons/icon.svg" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-gold);" alt="Avatar">
-          <div>
-            <h3 id="txt-barbero-nombre" style="font-size: 1.15rem; font-weight: 800; margin: 0;">Mi Sillón</h3>
-            <span id="txt-barbero-esp" style="font-size: 0.82rem; color: var(--text-secondary);">Barbero Profesional</span>
+        <div class="barber-selector" style="display: flex; align-items: center; gap: 10px;">
+          <img id="barbero-avatar-head" src="./assets/icons/icon.svg" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-gold);" alt="Avatar">
+          <div style="flex: 1; min-width: 0;">
+            <h3 id="txt-barbero-nombre" style="font-size: 1.1rem; font-weight: 800; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Mi Sillón</h3>
+            <span id="txt-barbero-esp" style="font-size: 0.8rem; color: var(--text-secondary); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Barbero Profesional</span>
           </div>
           <button id="btn-editar-perfil-barbero" class="btn btn-ghost btn-sm" title="Editar mis datos">✏️</button>
         </div>
 
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <div class="dashboard-action-btns">
           <button id="btn-walkin-modal" class="btn btn-success btn-sm">+ Walk-in (Sin Cita)</button>
           <button id="btn-cita-manual" class="btn btn-primary btn-sm">+ Cita Manual</button>
           <button id="btn-bloquear" class="btn btn-secondary btn-sm" style="color: var(--accent-red); border-color: rgba(239, 68, 68, 0.4);">
@@ -162,7 +365,7 @@
       </div>
 
     <!-- PESTAÑAS: CITAS DIARIAS / AGENDA COMPLETA / MI HORARIO SEMANAL / ESTADÍSTICAS / TELEGRAM -->
-    <div class="view-tabs" style="margin-bottom: 22px;">
+    <div class="view-tabs" style="margin-bottom: 16px;">
       <button class="view-tab-btn active" id="tab-citas-hoy">🔥 Citas Diarias</button>
       <button class="view-tab-btn" id="tab-agenda-completa" style="display: inline-flex; align-items: center; gap: 6px;">
         <span>📋 Agenda Completa</span>
@@ -179,41 +382,40 @@
     <!-- VISTA 1: CITAS DIARIAS -->
     <section id="sec-hoy">
       <!-- NAVEGADOR DE FECHAS COMPLETO -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;">
-        <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
-          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-            <button id="btn-dia-prev" class="btn btn-outline btn-sm" title="Día anterior">◀ Anterior</button>
+      <div class="date-nav-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;">
+        <div style="display: flex; gap: 6px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+          <div class="date-nav-row-btns" style="display: flex; gap: 4px; align-items: center; flex: 1; min-width: 200px;">
+            <button id="btn-dia-prev" class="btn btn-outline btn-sm" title="Día anterior">◀</button>
             <button id="btn-filtro-hoy" class="btn btn-primary btn-sm">📅 Hoy</button>
             <button id="btn-filtro-manana" class="btn btn-outline btn-sm">🌅 Mañana</button>
-            <button id="btn-dia-next" class="btn btn-outline btn-sm" title="Día siguiente">Siguiente ▶</button>
+            <button id="btn-dia-next" class="btn btn-outline btn-sm" title="Día siguiente">▶</button>
           </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <label for="inp-fecha-agenda" style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">Elegir Día:</label>
-            <input type="date" id="inp-fecha-agenda" class="form-input" style="padding: 4px 10px; font-size: 0.88rem; width: 145px; border-radius: 6px; color: var(--text-primary); background: var(--bg-surface);">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <input type="date" id="inp-fecha-agenda" class="form-input" style="padding: 4px 8px; font-size: 0.82rem; width: 130px; border-radius: 6px; color: var(--text-primary); background: var(--bg-surface);">
           </div>
         </div>
 
-        <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+        <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; border-top: 1px solid var(--border-color); padding-top: 8px;">
           <div>
-            <span id="txt-fecha-legible-vista" style="font-weight: 800; font-size: 1.05rem; color: var(--accent-gold);">📅 Cargando fecha...</span>
-            <span id="txt-citas-resumen-dia" style="font-size: 0.85rem; color: var(--text-secondary); margin-left: 8px;">(0 citas)</span>
+            <span id="txt-fecha-legible-vista" style="font-weight: 800; font-size: 0.95rem; color: var(--accent-gold);">📅 Cargando fecha...</span>
+            <span id="txt-citas-resumen-dia" style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 6px;">(0 citas)</span>
           </div>
-          <button id="btn-ir-agenda-completa" class="btn btn-ghost btn-sm" style="color: var(--accent-gold); font-weight: 700;">
+          <button id="btn-ir-agenda-completa" class="btn btn-ghost btn-sm" style="color: var(--accent-gold); font-weight: 700; font-size: 0.8rem; padding: 2px 6px;">
             Ver Agenda Completa 👉
           </button>
         </div>
       </div>
 
       <!-- BANNER DE CITAS FUTURAS PENDIENTES (AVISO INFORMATIVO) -->
-      <div id="banner-citas-futuras-alerta" style="display: none; background: rgba(59, 130, 246, 0.1); border: 1.5px solid rgba(59, 130, 246, 0.4); border-radius: 10px; padding: 12px 16px; margin-bottom: 18px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+      <div id="banner-citas-futuras-alerta" style="display: none; background: rgba(59, 130, 246, 0.1); border: 1.5px solid rgba(59, 130, 246, 0.4); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
           <div>
-            <span style="font-weight: 800; color: #60a5fa; font-size: 0.95rem;">🔔 Citas Agendadas para Próximos Días</span>
-            <p id="txt-banner-citas-futuras" style="font-size: 0.85rem; color: var(--text-secondary); margin: 3px 0 0;">
+            <span style="font-weight: 800; color: #60a5fa; font-size: 0.9rem;">🔔 Citas Agendadas para Próximos Días</span>
+            <p id="txt-banner-citas-futuras" style="font-size: 0.82rem; color: var(--text-secondary); margin: 2px 0 0;">
               Tienes citas reservadas por clientes para fechas posteriores.
             </p>
           </div>
-          <button id="btn-banner-ver-proximas" class="btn btn-primary btn-sm" style="background: #2563eb; border-color: #1d4ed8;">
+          <button id="btn-banner-ver-proximas" class="btn btn-primary btn-sm" style="background: #2563eb; border-color: #1d4ed8; padding: 4px 10px; font-size: 0.8rem;">
             📋 Ver Agenda Completa
           </button>
         </div>
@@ -230,10 +432,10 @@
       </div>
 
       <!-- CRONOLOGÍA DE TODAS LAS CITAS DEL DÍA Y HUECOS LIBRES -->
-      <div style="margin-top: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-          <h3 id="titulo-citas-dia" style="font-size: 1.2rem; font-weight: 800;">📋 Citas del Día</h3>
-          <span id="badge-ingresos-barbero" style="font-weight: 800; color: var(--accent-gold); font-size: 0.95rem;">
+      <div style="margin-top: 18px;">
+        <div class="timeline-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;">
+          <h3 id="titulo-citas-dia" style="font-size: 1.15rem; font-weight: 800; margin: 0;">📋 Citas del Día</h3>
+          <span id="badge-ingresos-barbero" style="font-weight: 800; color: var(--accent-gold); font-size: 0.9rem;">
             Ingresos est.: $0
           </span>
         </div>
@@ -527,7 +729,7 @@
   </main>
 
   <script type="module">
-    import { DB, VERTICALES } from './js/db.js';
+    import { DB, VERTICALES, getAppBaseUrl } from './js/db.js';
     import { Auth } from './js/auth.js';
     import { ThemeManager, showToast, reproducirSonidoNuevaCita } from './js/state.js';
     import {
@@ -651,7 +853,7 @@
     // MODAL DE QR Y ENLACE PERSONAL DEL BARBERO
     document.getElementById('btn-qr-barbero-propio')?.addEventListener('click', () => {
       if (!barberoActual || !negocioActual) return;
-      const urlBarbero = `${window.location.origin}/cliente.html?b=${negocioActual.slug}&barbero=${barberoActual.slug}`;
+      const urlBarbero = `${getAppBaseUrl()}cliente.html?b=${negocioActual.slug}&barbero=${barberoActual.slug}`;
 
       const modal = document.createElement('div');
       modal.className = 'modal-overlay';
@@ -715,7 +917,11 @@
       if (platLogo) platLogo.src = plat.logoUrl || './assets/icons/icon.svg';
 
       // Actualizar datos del header del barbero
-      document.getElementById('nav-barbero-nombre').innerText = `${negocioActual ? negocioActual.nombre : ''} · ${vert.sillonOEspacio}: ${barberoActual.nombre}`;
+      const elNavNombre = document.getElementById('nav-barbero-nombre');
+      if (elNavNombre) {
+        elNavNombre.innerText = `${negocioActual ? negocioActual.nombre : ''} · ${vert.sillonOEspacio}: ${barberoActual.nombre}`;
+        elNavNombre.title = `${negocioActual ? negocioActual.nombre : ''} · ${vert.sillonOEspacio}: ${barberoActual.nombre}`;
+      }
       document.getElementById('txt-barbero-nombre').innerText = barberoActual.nombre;
       document.getElementById('txt-barbero-esp').innerText = barberoActual.especialidad || `${vert.personalSingular} Profesional ${vert.icono}`;
       if (barberoActual.fotoUrl) {
@@ -723,9 +929,9 @@
       }
 
       const btnWalk = document.getElementById('btn-walkin-modal');
-      if (btnWalk) btnWalk.innerText = `+ Walk-in (${vert.sillonOEspacio})`;
+      if (btnWalk) btnWalk.innerText = '+ Walk-in (Rápido)';
       const btnBloq = document.getElementById('btn-bloquear');
-      if (btnBloq) btnBloq.innerText = `⛔ Bloquear ${vert.sillonOEspacio}`;
+      if (btnBloq) btnBloq.innerText = '⛔ Bloquear Horas';
 
       // Alerta si la agenda está suspendida o vencida por el Superadmin
       const bannerAlerta = document.getElementById('banner-alerta-barbero');
@@ -774,7 +980,7 @@
       }
       const titCitasDia = document.getElementById('titulo-citas-dia');
       if (titCitasDia) {
-        titCitasDia.innerText = esHoy ? '📋 Todas mis Citas de Hoy' : `📋 Citas del ${formatearFechaLegible(fechaVista)}`;
+        titCitasDia.innerText = esHoy ? '📋 Citas de Hoy' : `📋 Citas del ${formatearFechaLegible(fechaVista)}`;
       }
 
       // Alerta sonora y toast cuando entra una cita nueva en tiempo real
@@ -785,11 +991,11 @@
       }
       ultimaCitasTotalCount = todasLasCitas.length;
 
-      // Banner de citas futuras agendadas
+      // Banner de citas futuras agendadas (solo se muestra cuando se está en la vista de HOY)
       const bannerFuturas = document.getElementById('banner-citas-futuras-alerta');
       const txtBannerFuturas = document.getElementById('txt-banner-citas-futuras');
       if (bannerFuturas && txtBannerFuturas) {
-        if (citasOtrosDias.length > 0) {
+        if (esHoy && citasOtrosDias.length > 0) {
           bannerFuturas.style.display = 'block';
           const prox = citasOtrosDias[0];
           txtBannerFuturas.innerHTML = `Tienes <strong>${citasOtrosDias.length} cita(s)</strong> programada(s) para los próximos días. La más próxima es el <strong>${formatearFechaLegible(prox.fechaLocal)}</strong> a las <strong>${formatTime12(prox.horaInicioLocal)}</strong> con <strong>${prox.clienteNombre}</strong>.`;
@@ -2141,7 +2347,7 @@
 
     // Compartir link
     document.getElementById('btn-copiar-mi-link')?.addEventListener('click', () => {
-      const url = `${window.location.origin}/cliente.html?b=${negocioActual.slug}&barbero=${barberoActual.slug}`;
+      const url = `${getAppBaseUrl()}cliente.html?b=${negocioActual.slug}&barbero=${barberoActual.slug}`;
       navigator.clipboard?.writeText(url).then(() => {
         showToast('Enlace personal copiado al portapapeles', 'success');
       });

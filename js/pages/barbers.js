@@ -6,6 +6,7 @@ import { AppState, showToast } from '../state.js';
 import { DataService } from '../firebase-client.js';
 import { renderizarQR, descargarQR } from '../utils/qr-generator.js';
 import { comprimirImagen } from '../utils/image-compressor.js';
+import { getAppBaseUrl } from '../db.js';
 
 export async function renderBarbers(container) {
   const negocio = AppState.negocioActual || { id: 'barberia-vip', slug: 'la-barberia' };
@@ -15,7 +16,7 @@ export async function renderBarbers(container) {
 
   function render() {
     if (!barberoActivo && barberos.length > 0) barberoActivo = barberos[0];
-    const urlBarbero = `${window.location.origin}/b/${negocio.slug}/${barberoActivo?.slug || ''}`;
+    const urlBarbero = `${getAppBaseUrl()}cliente.html?b=${negocio.slug}&barbero=${barberoActivo?.slug || ''}`;
 
     container.innerHTML = `
       <div style="max-width: 760px; margin: 0 auto; padding-bottom: 60px;">
@@ -191,7 +192,7 @@ export async function renderBarbers(container) {
 
     // Copiar enlace
     document.getElementById('btn-copy-barber-link')?.addEventListener('click', () => {
-      const url = `${window.location.origin}/b/${negocio.slug}/${barberoActivo.slug}`;
+      const url = `${getAppBaseUrl()}cliente.html?b=${negocio.slug}&barbero=${barberoActivo.slug}`;
       navigator.clipboard?.writeText(url).then(() => {
         showToast('Enlace personal del barbero copiado', 'success');
       });
@@ -199,7 +200,7 @@ export async function renderBarbers(container) {
 
     // Ver QR
     document.getElementById('btn-qr-barber-link')?.addEventListener('click', () => {
-      const url = `${window.location.origin}/b/${negocio.slug}/${barberoActivo.slug}`;
+      const url = `${getAppBaseUrl()}cliente.html?b=${negocio.slug}&barbero=${barberoActivo.slug}`;
       mostrarModalQR(url, `${barberoActivo.slug}-qr.png`);
     });
 

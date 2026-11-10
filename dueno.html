@@ -7,6 +7,42 @@
   <link rel="icon" type="image/svg+xml" href="./assets/icons/icon.svg">
   <link rel="stylesheet" href="./css/variables.css">
   <link rel="stylesheet" href="./css/base.css">
+  <style>
+    @media (max-width: 640px) {
+      .navbar {
+        padding: 8px 10px !important;
+      }
+      .navbar .brand img {
+        width: 26px !important;
+        height: 26px !important;
+      }
+      #nav-biz-title {
+        font-size: 0.8rem !important;
+        max-width: 120px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        display: inline-block !important;
+      }
+      .navbar .nav-actions {
+        gap: 4px !important;
+      }
+      .navbar .nav-actions .btn {
+        padding: 4px 8px !important;
+        font-size: 0.75rem !important;
+        height: 30px !important;
+      }
+      .app-container {
+        padding: 10px 8px 60px !important;
+      }
+      #grid-barberos {
+        grid-template-columns: 1fr !important;
+      }
+      .card {
+        padding: 12px 14px !important;
+      }
+    }
+  </style>
 </head>
 <body>
   <!-- PANTALLA DE LOGIN DEL DUEÑO (SI NO HAY SESIÓN ACTIVA) -->
@@ -198,7 +234,7 @@
   </div>
 
   <script type="module">
-    import { DB, VERTICALES } from './js/db.js';
+    import { DB, VERTICALES, getAppBaseUrl } from './js/db.js';
     import { Auth } from './js/auth.js';
     import { ThemeManager, showToast } from './js/state.js';
     import { subirImagenAImgBB } from './js/utils/image-compressor.js';
@@ -451,7 +487,7 @@
         b.addEventListener('click', () => {
           const slug = b.dataset.slug;
           const nombre = b.dataset.nombre;
-          const urlBarbero = `${window.location.origin}/cliente.html?b=${negocioActual.slug}&barbero=${slug}`;
+          const urlBarbero = `${getAppBaseUrl()}cliente.html?b=${negocioActual.slug}&barbero=${slug}`;
           mostrarModalQR(urlBarbero, `QR de ${nombre}`, `${slug}-qr-personal.png`);
         });
       });
@@ -897,12 +933,12 @@
 
     // QR DEL LOCAL DE LA BARBERÍA
     document.getElementById('btn-qr-portal')?.addEventListener('click', () => {
-      const url = `${window.location.origin}/cliente.html?b=${negocioActual.slug}`;
+      const url = `${getAppBaseUrl()}cliente.html?b=${negocioActual.slug}`;
       mostrarModalQR(url, `📱 Código QR de ${negocioActual.nombre}`, `${negocioActual.slug}-qr-local.png`);
     });
 
     document.getElementById('btn-copiar-portal')?.addEventListener('click', () => {
-      const url = `${window.location.origin}/cliente.html?b=${negocioActual.slug}`;
+      const url = `${getAppBaseUrl()}cliente.html?b=${negocioActual.slug}`;
       navigator.clipboard?.writeText(url).then(() => showToast('Enlace de la barbería copiado', 'success'));
     });
 

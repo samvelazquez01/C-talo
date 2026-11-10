@@ -54,6 +54,21 @@ export const VERTICALES = {
   }
 };
 
+/**
+ * Obtiene la URL base absoluta donde reside la aplicación.
+ * Funciona automáticamente en:
+ * - GitHub Pages (ej: https://usuario.github.io/repositorio/)
+ * - Dominios personalizados (ej: https://citalo.com/)
+ * - Servidores locales (ej: http://localhost:3000/)
+ */
+export function getAppBaseUrl() {
+  if (typeof window === 'undefined' || !window.location) return './';
+  const loc = window.location;
+  const path = loc.pathname || '/';
+  const dir = path.substring(0, path.lastIndexOf('/') + 1);
+  return `${loc.origin}${dir}`;
+}
+
 export const EMPTY_DATABASE = {
   plataforma: {
     nombre: 'CÍTALO',
@@ -412,6 +427,10 @@ class AppDatabase {
     this.listeners.forEach((fn) => {
       try { fn(data); } catch (e) { console.error('Error en listener DB:', e); }
     });
+  }
+
+  getBaseUrl() {
+    return getAppBaseUrl();
   }
 
   // --- MÉTODOS DE NEGOCIO (MULTIVERTICAL) ---
