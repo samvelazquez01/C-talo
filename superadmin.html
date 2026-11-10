@@ -152,8 +152,8 @@
         <button id="btn-config-logo-sa" class="btn btn-secondary btn-sm" title="Cambiar logo oficial de CÍTALO para toda la app">
           🖼️ Logo CÍTALO
         </button>
-        <button id="btn-cambiar-clave-sa" class="btn btn-ghost btn-sm" title="Cambiar mi contraseña">
-          🔑 Cambiar Clave
+        <button id="btn-cambiar-clave-sa" class="btn btn-ghost btn-sm" title="Cambiar mi usuario y contraseña">
+          🔑 Mis Credenciales
         </button>
         <button id="btn-theme" class="btn btn-ghost btn-icon">🌙</button>
         <button id="btn-logout-sa" class="btn btn-outline btn-sm" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4);">
@@ -563,25 +563,34 @@
     });
 
     function abrirModalCambiarPassword() {
+      const db = DB.get();
+      const sa = db.superadmin || { usuario: 'admin', password: '1234' };
       const modal = document.createElement('div');
       modal.className = 'modal-overlay';
       modal.innerHTML = `
-        <div class="modal" style="max-width: 400px;">
+        <div class="modal" style="max-width: 440px;">
           <div class="modal-header">
-            <h3 class="modal-title">🔑 Cambiar mi Contraseña</h3>
+            <h3 class="modal-title">🔑 Mis Credenciales de Administrador</h3>
             <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
           </div>
           <div class="modal-body">
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+              Modifica tu usuario o contraseña maestra para ingresar a este panel de administración.
+            </p>
             <form id="form-cambiar-pass">
               <div class="form-group">
-                <label class="form-label">Nueva Contraseña *</label>
-                <input type="password" id="nueva-pass" class="form-input" required placeholder="Escribe tu nueva clave">
+                <label class="form-label">Mi Usuario Administrador *</label>
+                <input type="text" id="sa-user-input" class="form-input" required value="${sa.usuario || 'admin'}" placeholder="Ej: admin">
               </div>
               <div class="form-group">
-                <label class="form-label">Confirmar Nueva Contraseña *</label>
-                <input type="password" id="confirmar-pass" class="form-input" required placeholder="Repite la clave">
+                <label class="form-label">Nueva Contraseña (dejar vacío si no deseas cambiarla)</label>
+                <input type="password" id="nueva-pass" class="form-input" placeholder="Nueva clave (mínimo 3 caracteres)">
               </div>
-              <button type="submit" class="btn btn-primary btn-full">Guardar Nueva Contraseña</button>
+              <div class="form-group">
+                <label class="form-label">Confirmar Nueva Contraseña</label>
+                <input type="password" id="confirmar-pass" class="form-input" placeholder="Repite la nueva clave">
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">Guardar Mis Credenciales</button>
             </form>
           </div>
         </div>
@@ -593,18 +602,28 @@
 
       modal.querySelector('#form-cambiar-pass')?.addEventListener('submit', (e) => {
         e.preventDefault();
-        const p1 = modal.querySelector('#nueva-pass').value;
-        const p2 = modal.querySelector('#confirmar-pass').value;
-        if (p1 !== p2) {
-          showToast('Las contraseñas no coinciden', 'error');
+        const nuevoUser = modal.querySelector('#sa-user-input').value.trim();
+        const p1 = modal.querySelector('#nueva-pass').value.trim();
+        const p2 = modal.querySelector('#confirmar-pass').value.trim();
+
+        if (!nuevoUser) {
+          showToast('El usuario no puede estar vacío', 'warning');
           return;
         }
-        if (p1.length < 3) {
-          showToast('La contraseña debe tener al menos 3 caracteres', 'warning');
-          return;
+
+        if (p1 || p2) {
+          if (p1 !== p2) {
+            showToast('Las contraseñas no coinciden', 'error');
+            return;
+          }
+          if (p1.length < 3) {
+            showToast('La contraseña debe tener al menos 3 caracteres', 'warning');
+            return;
+          }
         }
-        Auth.cambiarPasswordSuperadmin(p1);
-        showToast('Contraseña de administrador actualizada en Firebase', 'success');
+
+        Auth.actualizarCredencialesSuperadmin(nuevoUser, p1 || null);
+        showToast('Credenciales de Administrador actualizadas con éxito en Firebase', 'success');
         cerrar();
       });
     }

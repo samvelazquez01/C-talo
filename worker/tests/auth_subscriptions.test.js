@@ -346,4 +346,42 @@ describe('Seguridad, Autenticación y Facturación SaaS', () => {
     publicos = DB.getBarberos(biz.id, true);
     assert.strictEqual(publicos.length, 0);
   });
+
+  it('Permite cambiar usuario y contraseña desde los paneles de Superadmin, Dueño y Barbero', () => {
+    // 1. Superadmin cambia su usuario y clave
+    assert.strictEqual(Auth.loginSuperadmin('admin', '1234'), true);
+    Auth.actualizarCredencialesSuperadmin('master-admin', 'claveSuperSecreta');
+    
+    // Antiguas credenciales fallan
+    assert.strictEqual(Auth.loginSuperadmin('admin', '1234'), false);
+    // Nuevas credenciales ingresan
+    assert.strictEqual(Auth.loginSuperadmin('master-admin', 'claveSuperSecreta'), true);
+
+    // 2. Dueño de negocio cambia su usuario y clave
+    const biz = DB.crearNegocio({
+      nombre: 'Imperio Barber',
+      slug: 'imperio',
+      usuario: 'imperio-user',
+      password: 'passwordOriginal'
+    });
+    assert.strictEqual(Auth.loginDueno('imperio-user', 'passwordOriginal').ok, true);
+
+    Auth.actualizarCredencialesDueno(biz.id, 'nuevo-imperio-user', 'nuevoPasswordEmpresa');
+    assert.strictEqual(Auth.loginDueno('imperio-user', 'passwordOriginal').ok, false);
+    assert.strictEqual(Auth.loginDueno('nuevo-imperio-user', 'nuevoPasswordEmpresa').ok, true);
+
+    // 3. Barbero cambia su usuario y clave
+    const barbero = DB.crearBarbero({
+      negocioId: biz.id,
+      nombre: 'Marcos Vasquez',
+      slug: 'marcos',
+      usuario: 'marcos-user',
+      password: 'barberoClave1'
+    });
+    assert.strictEqual(Auth.loginBarbero('marcos-user', 'barberoClave1').ok, true);
+
+    Auth.actualizarCredencialesBarbero(barbero.id, 'marcos-vip', 'barberoClave2026');
+    assert.strictEqual(Auth.loginBarbero('marcos-user', 'barberoClave1').ok, false);
+    assert.strictEqual(Auth.loginBarbero('marcos-vip', 'barberoClave2026').ok, true);
+  });
 });

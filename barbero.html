@@ -97,6 +97,9 @@
       .txt-btn-qr {
         display: none !important;
       }
+      .txt-btn-cred {
+        display: none !important;
+      }
       .txt-btn-logout {
         display: none !important;
       }
@@ -305,6 +308,9 @@
         </div>
       </div>
       <div class="nav-actions">
+        <button id="btn-cuenta-barbero" class="btn btn-ghost btn-sm" title="Cambiar mi usuario y contraseña de acceso">
+          🔑 <span class="txt-btn-cred">Mi </span>Cuenta
+        </button>
         <button id="btn-qr-barbero-propio" class="btn btn-primary btn-sm" title="Ver mi enlace directo y código QR personal">
           📱 <span class="txt-btn-qr">Mi Enlace y </span>QR
         </button>
@@ -1956,6 +1962,22 @@
                   Sube una foto desde tu galería o cámara (se optimiza y aloja gratis en ImgBB).
                 </small>
               </div>
+
+              <!-- CREDENCIALES DEL BARBERO -->
+              <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin: 14px 0;">
+                <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: var(--accent-gold);">🔑 Credenciales para Iniciar Sesión en Mi Estación</h4>
+                <div class="form-row">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Mi Usuario *</label>
+                    <input type="text" id="eb-user" class="form-input" required value="${barberoActual.cuenta?.usuario || barberoActual.slug}" placeholder="Usuario">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Mi Contraseña *</label>
+                    <input type="text" id="eb-pass" class="form-input" required value="${barberoActual.cuenta?.password || '1234'}" placeholder="Contraseña">
+                  </div>
+                </div>
+              </div>
+
               <button type="submit" id="btn-save-perfil" class="btn btn-primary btn-full">Guardar Perfil</button>
             </form>
           </div>
@@ -1988,6 +2010,12 @@
           }
         }
 
+        const nuevoUser = modal.querySelector('#eb-user')?.value.trim();
+        const nuevaPass = modal.querySelector('#eb-pass')?.value.trim();
+        if (nuevoUser || nuevaPass) {
+          Auth.actualizarCredencialesBarbero(barberoActual.id, nuevoUser, nuevaPass);
+        }
+
         DB.actualizarBarbero(barberoActual.id, {
           nombre: modal.querySelector('#eb-nombre').value.trim(),
           especialidad: modal.querySelector('#eb-esp').value.trim(),
@@ -1995,10 +2023,62 @@
           slug: modal.querySelector('#eb-slug').value.trim(),
           ...(fotoUrl ? { fotoUrl } : {})
         });
+        barberoActual = DB.getBarbero(barberoActual.id);
 
-        showToast('Perfil actualizado', 'success');
+        showToast('Perfil y credenciales actualizados con éxito', 'success');
         cerrar();
-        init();
+        render();
+      });
+    });
+
+    // MODAL RÁPIDO DE CREDENCIALES DEL BARBERO (BOTÓN NAVBAR)
+    document.getElementById('btn-cuenta-barbero')?.addEventListener('click', () => {
+      if (!barberoActual) return;
+      const cuenta = barberoActual.cuenta || { usuario: barberoActual.slug, password: '1234' };
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 440px;">
+          <div class="modal-header">
+            <h3 class="modal-title">🔑 Mis Credenciales de Acceso</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+              Modifica tu usuario y contraseña personal para ingresar a tu estación de trabajo en <strong>${negocioActual?.nombre || 'el local'}</strong>.
+            </p>
+            <form id="form-credenciales-barbero">
+              <div class="form-group">
+                <label class="form-label">Mi Usuario de Acceso *</label>
+                <input type="text" id="cb-user" class="form-input" required value="${cuenta.usuario || barberoActual.slug}" placeholder="Usuario">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mi Contraseña *</label>
+                <input type="text" id="cb-pass" class="form-input" required value="${cuenta.password || '1234'}" placeholder="Contraseña">
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">Actualizar Mis Credenciales 🚀</button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#form-credenciales-barbero')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const u = modal.querySelector('#cb-user').value.trim();
+        const p = modal.querySelector('#cb-pass').value.trim();
+        if (!u || !p) {
+          showToast('Usuario y contraseña son requeridos', 'warning');
+          return;
+        }
+        Auth.actualizarCredencialesBarbero(barberoActual.id, u, p);
+        barberoActual = DB.getBarbero(barberoActual.id);
+        showToast('Credenciales actualizadas con éxito en Firebase', 'success');
+        cerrar();
+        render();
       });
     });
 
@@ -2306,7 +2386,7 @@
       showToast('Enviando mensaje a tu Telegram...', 'info');
 
       const botToken = '9289341660:AAGliANdEIlXYs4MrVxWxSkXiVmYpWnkPJs';
-      const texto = `💈 <b>¡Prueba Exitosa de AgendaBarber!</b>\n\nHola <b>${barberoActual.nombre}</b>, tu bot <b>@Asistentedeagendas_bot</b> está conectado en tiempo real.\n\n⏰ Recordatorio configurado: cada <b>${tg.recordatorioMinutos || 15} min</b> antes de tu cita.\n☀️ Resumen diario activo.\n\n¡A partir de ahora, cada cliente que agende en tu sillón te enviará una notificación aquí!`;
+      const texto = `💈 <b>¡Prueba Exitosa de CÍTALO!</b>\n\nHola <b>${barberoActual.nombre}</b>, tu bot <b>@Asistentedeagendas_bot</b> está conectado en tiempo real.\n\n⏰ Recordatorio configurado: cada <b>${tg.recordatorioMinutos || 15} min</b> antes de tu cita.\n☀️ Resumen diario activo.\n\n¡A partir de ahora, cada cliente que agende en tu sillón te enviará una notificación aquí!\n\n<b>CÍTALO</b> · Tu cita a un click`;
 
       try {
         const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {

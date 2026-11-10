@@ -38,12 +38,71 @@ export const Auth = {
 
   cambiarPasswordSuperadmin(nuevaPassword) {
     if (!nuevaPassword || nuevaPassword.trim().length < 3) return false;
+    return this.actualizarCredencialesSuperadmin(null, nuevaPassword);
+  },
+
+  actualizarCredencialesSuperadmin(nuevoUsuario, nuevaPassword) {
     const db = DB.get();
     if (!db.superadmin) {
       db.superadmin = { usuario: 'admin', password: '1234', nombre: 'Administrador Principal' };
     }
-    db.superadmin.password = nuevaPassword.trim();
+    if (nuevoUsuario && nuevoUsuario.trim()) {
+      db.superadmin.usuario = nuevoUsuario.trim();
+    }
+    if (nuevaPassword && nuevaPassword.trim().length >= 3) {
+      db.superadmin.password = nuevaPassword.trim();
+    }
     DB.save(db);
+
+    const sesion = this.getSuperadminSession();
+    if (sesion) {
+      sesion.usuario = db.superadmin.usuario;
+      localStorage.setItem('agendabarber_auth_superadmin', JSON.stringify(sesion));
+    }
+    return true;
+  },
+
+  actualizarCredencialesDueno(negocioId, nuevoUsuario, nuevaPassword) {
+    const db = DB.get();
+    const negocio = (db.negocios || []).find(n => n.id === negocioId);
+    if (!negocio) return false;
+
+    if (!negocio.cuenta) negocio.cuenta = {};
+    if (nuevoUsuario && nuevoUsuario.trim()) {
+      negocio.cuenta.usuario = nuevoUsuario.trim();
+    }
+    if (nuevaPassword && nuevaPassword.trim()) {
+      negocio.cuenta.password = nuevaPassword.trim();
+    }
+    DB.actualizarNegocio(negocioId, negocio);
+
+    const sesion = this.getDuenoSession();
+    if (sesion && sesion.negocioId === negocioId) {
+      sesion.usuario = negocio.cuenta.usuario;
+      localStorage.setItem('agendabarber_auth_dueno', JSON.stringify(sesion));
+    }
+    return true;
+  },
+
+  actualizarCredencialesBarbero(barberoId, nuevoUsuario, nuevaPassword) {
+    const db = DB.get();
+    const barbero = (db.barberos || []).find(b => b.id === barberoId);
+    if (!barbero) return false;
+
+    if (!barbero.cuenta) barbero.cuenta = {};
+    if (nuevoUsuario && nuevoUsuario.trim()) {
+      barbero.cuenta.usuario = nuevoUsuario.trim();
+    }
+    if (nuevaPassword && nuevaPassword.trim()) {
+      barbero.cuenta.password = nuevaPassword.trim();
+    }
+    DB.actualizarBarbero(barberoId, barbero);
+
+    const sesion = this.getBarberoSession();
+    if (sesion && sesion.barberoId === barberoId) {
+      sesion.usuario = barbero.cuenta.usuario;
+      localStorage.setItem('agendabarber_auth_barbero', JSON.stringify(sesion));
+    }
     return true;
   },
 

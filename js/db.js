@@ -545,7 +545,11 @@ class AppDatabase {
     return (this.get().barberos || []).find(b => b.id === idOrSlug || b.slug === idOrSlug) || null;
   }
 
-  crearBarbero(negocioId, data) {
+  crearBarbero(negocioId, data = {}) {
+    if (typeof negocioId === 'object' && negocioId !== null) {
+      data = negocioId;
+      negocioId = data.negocioId;
+    }
     const db = this.get();
     const id = `barbero-${Date.now()}`;
     const slug = data.slug || (data.nombre ? data.nombre.toLowerCase().split(' ')[0].replace(/[^a-z0-9]/g, '') : `b-${Date.now()}`);
@@ -1161,7 +1165,10 @@ class AppDatabase {
 
   // ENVIAR NOTIFICACIÓN A TELEGRAM
   enviarNotificacionTelegram(chatId, cita, barbero = null) {
-    if (!chatId) return;
+    if (!chatId || !cita) return;
+    if (cita._tgNotificado) return;
+    cita._tgNotificado = true;
+
     const botToken = '9289341660:AAGliANdEIlXYs4MrVxWxSkXiVmYpWnkPJs';
     const serviciosTxt = (cita.servicios || []).map(s => s.nombre).join(', ') || 'Corte';
     const hora = cita.horaInicioLocal || '09:00';
@@ -1171,7 +1178,7 @@ class AppDatabase {
     const h12 = hh % 12 || 12;
     const hora12 = `${h12}:${String(mm).padStart(2, '0')} ${ampm}`;
 
-    const mensaje = `💈 <b>¡Nueva Cita Agendada!</b>\n\n👤 <b>Cliente:</b> ${cita.clienteNombre || 'Sin nombre'}\n📞 <b>Teléfono:</b> <a href="tel:${cita.clienteTelefono}">${cita.clienteTelefono || 'N/A'}</a>\n💇 <b>Servicio:</b> ${serviciosTxt}\n📅 <b>Día:</b> ${cita.fechaLocal}\n⏰ <b>Hora:</b> ${hora12} hs\n📍 <i>Origen: ${cita.origen || 'web'}</i>\n\nAgendaBarber`;
+    const mensaje = `💈 <b>¡Nueva Cita Agendada!</b>\n\n👤 <b>Cliente:</b> ${cita.clienteNombre || 'Sin nombre'}\n📞 <b>Teléfono:</b> <a href="tel:${cita.clienteTelefono}">${cita.clienteTelefono || 'N/A'}</a>\n💇 <b>Servicio:</b> ${serviciosTxt}\n📅 <b>Día:</b> ${cita.fechaLocal}\n⏰ <b>Hora:</b> ${hora12} hs\n📍 <i>Origen: ${cita.origen || 'web'}</i>\n\n<b>CÍTALO</b> · Tu cita a un click`;
 
     try {
       if (typeof fetch !== 'undefined') {
@@ -1199,9 +1206,12 @@ class AppDatabase {
   }
 
   enviarNotificacionCancelacionTelegram(chatId, cita, motivo = null) {
-    if (!chatId) return;
+    if (!chatId || !cita) return;
+    if (cita._tgCanceladoNotificado) return;
+    cita._tgCanceladoNotificado = true;
+
     const botToken = '9289341660:AAGliANdEIlXYs4MrVxWxSkXiVmYpWnkPJs';
-    const mensaje = `🚫 <b>Cita Cancelada</b>\n\n👤 <b>Cliente:</b> ${cita.clienteNombre}\n📅 <b>Día:</b> ${cita.fechaLocal} a las ${cita.horaInicioLocal} hs\n${motivo ? `❓ <b>Motivo:</b> ${motivo}` : ''}\n\nTu sillón ha sido liberado automáticamente en esa hora.`;
+    const mensaje = `🚫 <b>Cita Cancelada</b>\n\n👤 <b>Cliente:</b> ${cita.clienteNombre}\n📅 <b>Día:</b> ${cita.fechaLocal} a las ${cita.horaInicioLocal} hs\n${motivo ? `❓ <b>Motivo:</b> ${motivo}\n` : ''}\nTu sillón ha sido liberado automáticamente en esa hora.\n\n<b>CÍTALO</b> · Tu cita a un click`;
 
     try {
       if (typeof fetch !== 'undefined') {

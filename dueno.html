@@ -89,6 +89,9 @@
         </div>
       </div>
       <div class="nav-actions">
+        <button id="btn-cuenta-dueno" class="btn btn-ghost btn-sm" title="Cambiar mi usuario y contraseña de acceso">
+          🔑 Mis Credenciales
+        </button>
         <button id="btn-qr-portal" class="btn btn-primary btn-sm" title="Ver enlace y código QR del negocio">
           📱 QR Local
         </button>
@@ -974,6 +977,22 @@
                   Sube tu logo para que tus clientes lo vean en su móvil.
                 </small>
               </div>
+
+              <!-- CREDENCIALES DEL DUEÑO -->
+              <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin: 14px 0;">
+                <h4 style="font-size: 0.95rem; margin-bottom: 8px; color: var(--accent-gold);">👤 Credenciales de Acceso para el Dueño</h4>
+                <div class="form-row">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Usuario Dueño *</label>
+                    <input type="text" id="ed-dueno-user" class="form-input" required value="${negocioActual.cuenta?.usuario || negocioActual.slug}" placeholder="Usuario para entrar">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Contraseña Dueño *</label>
+                    <input type="text" id="ed-dueno-pass" class="form-input" required value="${negocioActual.cuenta?.password || '1234'}" placeholder="Contraseña">
+                  </div>
+                </div>
+              </div>
+
               <button type="submit" id="btn-save-edit-local" class="btn btn-primary btn-full">Guardar Cambios</button>
             </form>
           </div>
@@ -1005,6 +1024,12 @@
           }
         }
 
+        const nuevoUser = modal.querySelector('#ed-dueno-user')?.value.trim();
+        const nuevaPass = modal.querySelector('#ed-dueno-pass')?.value.trim();
+        if (nuevoUser || nuevaPass) {
+          Auth.actualizarCredencialesDueno(negocioActual.id, nuevoUser, nuevaPass);
+        }
+
         DB.actualizarNegocio(negocioActual.id, {
           nombre: modal.querySelector('#ed-nombre').value.trim(),
           telefono: modal.querySelector('#ed-tel').value.trim(),
@@ -1012,7 +1037,58 @@
           ...(logoUrl ? { logoUrl } : {})
         });
         negocioActual = DB.getNegocio(negocioActual.id);
-        showToast('Datos del negocio actualizados', 'success');
+        showToast('Datos y credenciales del negocio actualizados con éxito', 'success');
+        cerrar();
+        renderTodo();
+      });
+    });
+
+    // MODAL RÁPIDO DE CREDENCIALES DEL DUEÑO (BOTÓN NAVBAR)
+    document.getElementById('btn-cuenta-dueno')?.addEventListener('click', () => {
+      if (!negocioActual) return;
+      const cuenta = negocioActual.cuenta || { usuario: negocioActual.slug, password: '1234' };
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 440px;">
+          <div class="modal-header">
+            <h3 class="modal-title">🔑 Mis Credenciales de Acceso</h3>
+            <button class="btn-close-modal" style="font-size: 1.5rem;">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+              Modifica tu usuario y contraseña para entrar al panel de administración de <strong>${negocioActual.nombre}</strong>.
+            </p>
+            <form id="form-credenciales-dueno">
+              <div class="form-group">
+                <label class="form-label">Mi Usuario de Acceso *</label>
+                <input type="text" id="cd-user" class="form-input" required value="${cuenta.usuario || negocioActual.slug}" placeholder="Usuario">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mi Contraseña *</label>
+                <input type="text" id="cd-pass" class="form-input" required value="${cuenta.password || '1234'}" placeholder="Contraseña">
+              </div>
+              <button type="submit" class="btn btn-primary btn-full">Actualizar Mis Credenciales 🚀</button>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      const cerrar = () => modal.remove();
+      modal.querySelector('.btn-close-modal')?.addEventListener('click', cerrar);
+      modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+      modal.querySelector('#form-credenciales-dueno')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const u = modal.querySelector('#cd-user').value.trim();
+        const p = modal.querySelector('#cd-pass').value.trim();
+        if (!u || !p) {
+          showToast('Usuario y contraseña son requeridos', 'warning');
+          return;
+        }
+        Auth.actualizarCredencialesDueno(negocioActual.id, u, p);
+        negocioActual = DB.getNegocio(negocioActual.id);
+        showToast('Credenciales actualizadas con éxito en Firebase', 'success');
         cerrar();
         renderTodo();
       });
